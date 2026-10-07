@@ -1,4 +1,5 @@
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { AppLink } from "./AppLink";
 import type { ReactNode } from "react";
 import { LogoMark } from "./Icons";
 import { S } from "../i18n";
@@ -11,15 +12,15 @@ export function TopBar() {
   const team = activeTeam(state);
   return (
     <header className="topbar">
-      <Link to="/" className="logo">
+      <AppLink to="/" className="logo">
         <LogoMark />
         {S.ui.appName}
-      </Link>
+      </AppLink>
       {team && (
-        <Link to="/lag" className="chip chip--sm" aria-label={S.ui.team.title}>
+        <AppLink to="/lag" className="chip chip--sm" aria-label={S.ui.team.title}>
           <span className="chip__icon">🏒</span>
           {team.name}
-        </Link>
+        </AppLink>
       )}
     </header>
   );
@@ -47,20 +48,19 @@ const ITEMS = [
 ];
 
 export function BottomNav() {
+  const { pathname } = useLocation();
   return (
-    <nav className="nav" aria-label="Huvudmeny">
+    <nav className="nav" aria-label={S.ui.nav.label}>
       <div className="nav__inner">
-        {ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === "/"}
-            className={({ isActive }) => `nav__item${isActive ? " nav__item--on" : ""}`}
-          >
-            <span className="nav__icon">{item.icon}</span>
-            <span className="nav__label">{item.label}</span>
-          </NavLink>
-        ))}
+        {ITEMS.map((item) => {
+          const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+          return (
+            <AppLink key={item.to} to={item.to} className={`nav__item${active ? " nav__item--on" : ""}`}>
+              <span className="nav__icon">{item.icon}</span>
+              <span className="nav__label">{item.label}</span>
+            </AppLink>
+          );
+        })}
       </div>
     </nav>
   );

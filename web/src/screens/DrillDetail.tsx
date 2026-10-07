@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { AppLink } from "../components/AppLink";
 import { BackBar, BottomNav } from "../components/Chrome";
 import { ConfirmButton } from "../components/ConfirmButton";
 import { RinkDiagram } from "../components/RinkDiagram";
 import { Sheet } from "../components/Sheet";
 import { upcomingSlots } from "../domain/schedule";
 import type { Drill, EquipmentNeed } from "../domain/types";
-import { S, relativeDay } from "../i18n";
+import { S, formatTime, relativeDay } from "../i18n";
 import { activeTeam, allDrills, deleteOwnDrill, newPart, planSession, setParts } from "../store/actions";
 import { getState, useAppState } from "../store/store";
 import { EQUIPMENT_ICONS } from "./SessionScreen";
@@ -107,9 +108,9 @@ export function DrillDetail() {
           <p className="footer-note">{t.review}</p>
         ) : (
           <div style={{ display: "flex", gap: 20, marginTop: 24 }}>
-            <Link to={`/ovningar/${drill.id}/andra`} className="link">
+            <AppLink to={`/ovningar/${drill.id}/andra`} className="link">
               {t.editOwn}
-            </Link>
+            </AppLink>
             <ConfirmButton
               className="link link--danger"
               label={t.deleteOwn}
@@ -147,7 +148,7 @@ function AddToSessionSheet({ drill, onClose, onAdded }: { drill: Drill; onClose:
       {slots.length === 0 && <p className="sub">{t.noSessions}</p>}
       <ul className="rows">
         {slots.map((slot) => {
-          const label = `${relativeDay(slot.date, today)} ${slot.start}`;
+          const label = `${relativeDay(slot.date, today)} ${formatTime(slot.start)}`;
           return (
             <li key={`${slot.date} ${slot.start}`}>
               <button

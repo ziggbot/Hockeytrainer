@@ -6,7 +6,7 @@ import { minutesToTime, parseISODate, timeToMinutes } from "../domain/dates";
 import { partMinutes, totalMinutes } from "../domain/planner";
 import { decodeShare } from "../domain/share";
 import { stationLetter } from "../domain/editParts";
-import { S, formatDayLong } from "../i18n";
+import { S, formatDayLong, formatTime } from "../i18n";
 import { RinkMode } from "./RinkMode";
 import { PlanTotal } from "./SessionScreen";
 
@@ -78,7 +78,7 @@ export function SharedSession() {
       </p>
       <h1 className="title">{shared.title}</h1>
       <p className="sub">
-        {date && formatDayLong(date)} · {shared.start} · {S.ui.common.minutes(shared.minutes)}
+        {date && formatDayLong(date)} · {formatTime(shared.start)} · {S.ui.common.minutes(shared.minutes)}
       </p>
 
       <button type="button" className="cta" onClick={() => setRink(true)}>
@@ -91,7 +91,7 @@ export function SharedSession() {
         </div>
         <ul className="rows">
           {shared.parts.map((part, i) => {
-            const at = minutesToTime(clock);
+            const at = formatTime(minutesToTime(clock));
             clock += partMinutes(part);
             const ids = part.type === "drill" ? [part.drillId] : part.drillIds;
             return (

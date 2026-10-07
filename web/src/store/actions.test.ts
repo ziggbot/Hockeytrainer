@@ -30,3 +30,27 @@ describe("planning sessions", () => {
     expect(totalMinutes(session(id).parts)).toBe(45);
   });
 });
+
+describe("loading saved data", () => {
+  it("drops records that can't be rendered instead of crashing", async () => {
+    const { normalizeState } = await import("./store");
+    const s = normalizeState({
+      version: 1,
+      activeTeamId: "t",
+      teams: [{ id: "t", name: "T", ageGroupId: "u10", playerCount: 12, schedule: null }, null],
+      sessions: [
+        { id: "ok", teamId: "t", date: "2026-10-08", start: "18:00", minutes: 60, title: "OK", parts: [], status: "planned" },
+        { id: "broken", teamId: "t", date: "2026-10-08", start: "18:00", parts: null }
+      ],
+      curricula: "nope",
+      notes: [{ sessionId: "ok", text: "x", tags: [] }, 7]
+    });
+    expect(s.teams).toHaveLength(1);
+    expect(s.teams[0].schedule).toEqual([]);
+    expect(s.sessions.map((x) => x.id)).toEqual(["ok"]);
+    expect(s.sessions[0].focus).toEqual([]);
+    expect(s.curricula.length).toBeGreaterThan(0);
+    expect(s.notes).toHaveLength(1);
+    expect(normalizeState("garbage").teams).toEqual([]);
+  });
+});

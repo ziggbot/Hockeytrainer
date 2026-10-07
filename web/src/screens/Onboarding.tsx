@@ -2,6 +2,7 @@ import { useState } from "react";
 import { BackBar } from "../components/Chrome";
 import { LogoMark } from "../components/Icons";
 import { Stepper } from "../components/Stepper";
+import { TimeAndLength } from "../components/TimeAndLength";
 import { AGE_GROUPS } from "../content/curricula";
 import { S } from "../i18n";
 import { createTeam, newTrainingTime } from "../store/actions";
@@ -12,22 +13,30 @@ const t = S.ui.onboarding;
 export function Onboarding({ onDone, showBack = false }: { onDone?: () => void; showBack?: boolean }) {
   const [name, setName] = useState("");
   const [ageGroupId, setAgeGroupId] = useState("u10");
-  const [days, setDays] = useState<number[]>([]);
-  const [start, setStart] = useState("18:00");
-  const [minutes, setMinutes] = useState(60);
+  // One entry per training day, each with its own start and ice time.
+  const [times, setTimes] = useState<{ weekday: number; start: string; minutes: number }[]>([]);
   const [players, setPlayers] = useState(14);
   const [error, setError] = useState<string | null>(null);
 
-  const toggleDay = (d: number) => setDays((ds) => (ds.includes(d) ? ds.filter((x) => x !== d) : [...ds, d].sort()));
+  const hasDay = (d: number) => times.some((x) => x.weekday === d);
+  const toggleDay = (d: number) =>
+    setTimes((xs) => {
+      if (xs.some((x) => x.weekday === d)) return xs.filter((x) => x.weekday !== d);
+      // A new day starts from the last day's time — usually close, quick to adjust.
+      const last = xs[xs.length - 1];
+      return [...xs, { weekday: d, start: last?.start ?? "18:00", minutes: last?.minutes ?? 60 }].sort(
+        (a, b) => a.weekday - b.weekday
+      );
+    });
 
   const submit = () => {
     if (!name.trim()) return setError(t.needName);
-    if (days.length === 0) return setError(t.needDay);
+    if (times.length === 0) return setError(t.needDay);
     createTeam({
       name: name.trim(),
       ageGroupId,
       playerCount: players,
-      schedule: days.map((d) => newTrainingTime(d, start, minutes))
+      schedule: times.map((x) => newTrainingTime(x.weekday, x.start, x.minutes))
     });
     onDone?.();
   };
@@ -82,8 +91,8 @@ export function Onboarding({ onDone, showBack = false }: { onDone?: () => void; 
             <button
               key={label}
               type="button"
-              className={`chip chip--sm${days.includes(i + 1) ? " chip--on" : ""}`}
-              aria-pressed={days.includes(i + 1)}
+              className={`chip chip--sm${hasDay(i + 1) ? " chip--on" : ""}`}
+              aria-pressed={hasDay(i + 1)}
               onClick={() => toggleDay(i + 1)}
             >
               {label}
@@ -92,24 +101,25 @@ export function Onboarding({ onDone, showBack = false }: { onDone?: () => void; 
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-        <label className="field">
-          <span className="field__label">{t.start}</span>
-          <input className="input input--sm" type="time" value={start} onChange={(e) => setStart(e.target.value)} />
-        </label>
-        <div className="field">
-          <span className="field__label">{t.length}</span>
-          <Stepper
-            value={minutes}
-            onChange={setMinutes}
-            min={15}
-            max={180}
-            step={5}
-            label={t.length}
-            format={S.ui.common.minutes}
-          />
-        </div>
-      </div>
+      {times.length > 0 && (
+        <ul className="rows">
+          {times.map((x) => {
+            const day = S.weekdays[x.weekday - 1];
+            return (
+              <li key={x.weekday} className="time-row">
+                <span className="time-row__day">{day.charAt(0).toUpperCase() + day.slice(1)}</span>
+                <TimeAndLength
+                  start={x.start}
+                  minutes={x.minutes}
+                  label={day}
+                  onChange={(next) => setTimes((xs) => xs.map((y) => (y.weekday === x.weekday ? { ...y, ...next } : y)))}
+                />
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {times.length > 1 && <span className="field__hint">{t.daysHint}</span>}
 
       <div className="field">
         <span className="field__label">{S.ui.team.players}</span>

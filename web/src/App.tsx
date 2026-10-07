@@ -1,5 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { BrowserRouter, MemoryRouter, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { decodeShare } from "./domain/share";
 import { IS_ARTIFACT } from "./platform";
 import { DrillDetail } from "./screens/DrillDetail";
@@ -17,6 +18,17 @@ function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => window.scrollTo(0, 0), [pathname]);
   return null;
+}
+
+/** A crash on one screen shows an error with a way home; leaving the screen resets it. */
+function Guarded({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  return (
+    <ErrorBoundary key={pathname} onReset={() => navigate("/", { replace: true })}>
+      {children}
+    </ErrorBoundary>
+  );
 }
 
 function NewTeam() {
@@ -37,20 +49,22 @@ export function App() {
   const routes = (
     <>
       <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/pass/:id" element={<SessionScreen />} />
-        <Route path="/pass/:id/rink" element={<RinkRoute />} />
-        <Route path="/ovningar" element={<DrillLibrary />} />
-        <Route path="/ovningar/ny" element={<DrillEditor />} />
-        <Route path="/ovningar/:id" element={<DrillDetail />} />
-        <Route path="/ovningar/:id/andra" element={<DrillEditor />} />
-        <Route path="/sasong" element={<Season />} />
-        <Route path="/lag" element={<TeamSettings />} />
-        <Route path="/nytt-lag" element={<NewTeam />} />
-        <Route path="/delat" element={<SharedSession />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Guarded>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/pass/:id" element={<SessionScreen />} />
+          <Route path="/pass/:id/rink" element={<RinkRoute />} />
+          <Route path="/ovningar" element={<DrillLibrary />} />
+          <Route path="/ovningar/ny" element={<DrillEditor />} />
+          <Route path="/ovningar/:id" element={<DrillDetail />} />
+          <Route path="/ovningar/:id/andra" element={<DrillEditor />} />
+          <Route path="/sasong" element={<Season />} />
+          <Route path="/lag" element={<TeamSettings />} />
+          <Route path="/nytt-lag" element={<NewTeam />} />
+          <Route path="/delat" element={<SharedSession />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Guarded>
     </>
   );
   return IS_ARTIFACT ? (

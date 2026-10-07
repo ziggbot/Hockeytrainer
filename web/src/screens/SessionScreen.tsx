@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { AppLink } from "../components/AppLink";
 import { BackBar, BottomNav } from "../components/Chrome";
 import { Check } from "../components/Check";
 import { ConfirmButton } from "../components/ConfirmButton";
@@ -21,7 +22,7 @@ import { equipmentFor } from "../domain/equipment";
 import { MIN_PART_MINUTES, partMinutes, totalMinutes } from "../domain/planner";
 import { encodeShare } from "../domain/share";
 import { NOTE_TAGS, type Drill, type NoteTag, type Session, type SessionPart } from "../domain/types";
-import { S, formatDayShort, relativeDay } from "../i18n";
+import { S, formatDayShort, relativeDay, formatTime } from "../i18n";
 import {
   addNote,
   ageGroupOf,
@@ -111,7 +112,7 @@ export function SessionScreen() {
         <BackBar to="/" />
         <h1 className="title">{session.title}</h1>
         <p className="sub">
-          {relativeDay(session.date, new Date())} {formatDayShort(date)} · {session.start} ·{" "}
+          {relativeDay(session.date, new Date())} {formatDayShort(date)} · {formatTime(session.start)} ·{" "}
           {S.ui.common.minutes(session.minutes)}
         </p>
         {pos && (
@@ -123,9 +124,9 @@ export function SessionScreen() {
         {session.status === "done" ? (
           <div className="notice">{t.done}</div>
         ) : (
-          <Link to={`/pass/${session.id}/rink`} className="cta">
+          <AppLink to={`/pass/${session.id}/rink`} className="cta">
             {S.ui.home.go}
-          </Link>
+          </AppLink>
         )}
 
         <section className="section">
@@ -144,7 +145,7 @@ export function SessionScreen() {
 
           <ul className="rows">
             {parts.map((part, index) => {
-              const startsAt = minutesToTime(clock);
+              const startsAt = formatTime(minutesToTime(clock));
               clock += partMinutes(part);
               return (
                 <li key={part.id}>
@@ -389,9 +390,9 @@ export function DrillRow({
   );
   const cls = `row${label === undefined ? " row--compact" : ""}`;
   return drill ? (
-    <Link to={`/ovningar/${drill.id}`} className={cls}>
+    <AppLink to={`/ovningar/${drill.id}`} className={cls}>
       {body}
-    </Link>
+    </AppLink>
   ) : (
     <div className={cls}>{body}</div>
   );

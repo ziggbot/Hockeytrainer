@@ -92,12 +92,20 @@ export const sv = {
       weeks: (a: number, b: number) => `v. ${a}–${b}`,
       unknownDrill: "Övningen finns inte längre",
       tapAgain: "Säker? Tryck igen",
-      tapAgainDelete: "Tryck igen för att ta bort"
+      tapAgainDelete: "Tryck igen för att ta bort",
+      hour: "timme",
+      minute: "minut"
+    },
+    error: {
+      title: "Något gick fel",
+      body: "Appen stötte på ett fel på den här sidan. Dina data är kvar. Skicka gärna texten nedan till den som bygger appen.",
+      home: "Till startsidan"
     },
     nav: {
       season: "Säsong",
       train: "Träna",
-      drills: "Övningar"
+      drills: "Övningar",
+      label: "Huvudmeny"
     },
     home: {
       hello: "Hej tränare.",
@@ -122,7 +130,7 @@ export const sv = {
     },
     extra: {
       title: "Extrapass",
-      date: "Datum",
+      date: "Dag",
       start: "Starttid",
       length: "Istid (minuter)",
       add: "Lägg till"
@@ -289,6 +297,7 @@ export const sv = {
       hello: "Hej tränare.",
       sub: "Kom igång på en minut. Allt går att ändra sen.",
       days: "Vilka dagar tränar ni?",
+      daysHint: "Varje dag får sin egen tid och istid.",
       start: "Starttid",
       length: "Istid (minuter)",
       go: "Klart – nu kör vi",

@@ -65,6 +65,11 @@ a {
   color: inherit;
 }
 
+/* In-app links in the claude.ai preview have no href (see AppLink). */
+a[role="link"] {
+  cursor: pointer;
+}
+
 :focus-visible {
   outline: 3px solid var(--yellow);
   outline-offset: 2px;
@@ -630,6 +635,51 @@ textarea.input {
 .input--sm {
   width: auto;
   min-width: 0;
+}
+
+/* 24 h time as two selects: "17 . 15" */
+.timepicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timepicker select {
+  width: auto;
+  min-width: 64px;
+  padding: 6px 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: center;
+  text-align-last: center;
+  font-size: 22px;
+}
+
+.timepicker__dot {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.time-length {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+/* One training day: "Tisdag" above its time and ice time. */
+.time-row {
+  display: grid;
+  gap: 6px;
+  padding: 12px 0;
+  border-bottom: 1.5px dashed var(--line);
+}
+
+.time-row__day {
+  font-family: var(--hand);
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1;
 }
 
 .stepper {

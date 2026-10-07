@@ -1,16 +1,17 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { AppLink } from "../components/AppLink";
 import { BottomNav, TopBar } from "../components/Chrome";
 import { Check } from "../components/Check";
 import { Sheet } from "../components/Sheet";
-import { Stepper } from "../components/Stepper";
+import { TimeAndLength } from "../components/TimeAndLength";
 import { useNow } from "../components/useNow";
 import { currentBlock } from "../domain/curriculum";
 import { addDays, toISODate } from "../domain/dates";
 import { drillIdsOf } from "../domain/planner";
 import { nextSlot, upcomingSlots, type Slot } from "../domain/schedule";
 import { SKILLS, type Team } from "../domain/types";
-import { S, formatDayLong, relativeDay, shortDay } from "../i18n";
+import { S, formatDayLong, formatDayShort, formatTime, relativeDay, shortDay } from "../i18n";
 import { activeTeam, curriculumOf, planSession, previewPlan, setDone } from "../store/actions";
 import { useAppState } from "../store/store";
 import { Onboarding } from "./Onboarding";
@@ -53,9 +54,9 @@ export function Home() {
             onOpen={() => navigate(`/pass/${ensureSession(next)}`)}
           />
         ) : team.schedule.length === 0 ? (
-          <Link to="/lag" className="cta">
+          <AppLink to="/lag" className="cta">
             {t.addTimes}
-          </Link>
+          </AppLink>
         ) : (
           <button type="button" className="cta" onClick={() => setExtraOpen(true)}>
             {t.extra}
@@ -98,13 +99,13 @@ export function Home() {
                       <span className="row__main">
                         <div className="row__title">{s ? s.title : t.unplanned}</div>
                         <div className="row__sub">
-                          {slot.start} · {S.ui.common.minutes(slot.minutes)}
+                          {formatTime(slot.start)} · {S.ui.common.minutes(slot.minutes)}
                           {s && ` · ${S.ui.common.drills(count)}`}
                         </div>
                       </span>
                       <Check
                         checked={s?.status === "done"}
-                        label={`${relativeDay(slot.date, today)} ${slot.start}`}
+                        label={`${relativeDay(slot.date, today)} ${formatTime(slot.start)}`}
                         onChange={(done) => setDone(ensureSession(slot), done)}
                       />
                     </div>
@@ -114,9 +115,9 @@ export function Home() {
             </ul>
           )}
           <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginTop: 8 }}>
-            <Link to="/lag" className="link">
+            <AppLink to="/lag" className="link">
               {t.changeTimes}
-            </Link>
+            </AppLink>
             <button type="button" className="link" onClick={() => setExtraOpen(true)}>
               {t.extra}
             </button>
@@ -129,10 +130,10 @@ export function Home() {
           </div>
           <div className="chips">
             {SKILLS.map((skill) => (
-              <Link key={skill} to={`/ovningar?skill=${skill}`} className="chip">
+              <AppLink key={skill} to={`/ovningar?skill=${skill}`} className="chip">
                 <span className="chip__icon">{S.skillIcons[skill]}</span>
                 {S.skills[skill]}
-              </Link>
+              </AppLink>
             ))}
           </div>
         </section>
@@ -156,7 +157,7 @@ function NextUp({ team, slot, now, onGo, onOpen }: { team: Team; slot: Slot; now
         {t.go}
       </button>
       <div className="next">
-        <div className="next__label">{t.nextLabel(`${relativeDay(slot.date, now)} ${slot.start}`)}</div>
+        <div className="next__label">{t.nextLabel(`${relativeDay(slot.date, now)} ${formatTime(slot.start)}`)}</div>
         <h2 className="next__title">{plan.title}</h2>
         <div className="next__meta">
           {S.ui.common.drills(count)} · {S.ui.common.minutes(slot.minutes)}
@@ -172,36 +173,47 @@ function NextUp({ team, slot, now, onGo, onOpen }: { team: Team; slot: Slot; now
 
 function ExtraSessionSheet({ team, onClose, onCreated }: { team: Team; onClose: () => void; onCreated: (id: string) => void }) {
   const e = S.ui.extra;
-  const [date, setDate] = useState(() => toISODate(new Date()));
-  const [start, setStart] = useState(team.schedule[0]?.start ?? "18:00");
-  const [minutes, setMinutes] = useState(team.schedule[0]?.minutes ?? 60);
-  const max = toISODate(addDays(new Date(), 365));
+  const today = new Date();
+  // The next two weeks as tappable days; native date inputs show the phone's
+  // region format (e.g. 10/8/2026), not Swedish.
+  const days = Array.from({ length: 14 }, (_, i) => addDays(today, i));
+  const [date, setDate] = useState(() => toISODate(today));
+  const [time, setTime] = useState({ start: team.schedule[0]?.start ?? "18:00", minutes: team.schedule[0]?.minutes ?? 60 });
+  const { start, minutes } = time;
   return (
     <Sheet title={e.title} onClose={onClose}>
-      <label className="field">
-        <span className="field__label">{e.date}</span>
-        <input className="input" type="date" value={date} max={max} onChange={(ev) => setDate(ev.target.value)} />
-      </label>
-      <label className="field">
-        <span className="field__label">{e.start}</span>
-        <input className="input" type="time" value={start} onChange={(ev) => setStart(ev.target.value)} />
-      </label>
       <div className="field">
-        <span className="field__label">{e.length}</span>
-        <Stepper
-          value={minutes}
-          onChange={setMinutes}
-          min={15}
-          max={180}
-          step={5}
-          label={e.length}
-          format={S.ui.common.minutes}
-        />
+        <span className="field__label">{e.date}</span>
+        <div className="chips" style={{ marginTop: 4 }}>
+          {days.map((d) => {
+            const iso = toISODate(d);
+            const label =
+              iso === toISODate(today) || iso === toISODate(addDays(today, 1))
+                ? shortDay(iso, today)
+                : `${shortDay(iso, today)} ${formatDayShort(d)}`;
+            return (
+              <button
+                key={iso}
+                type="button"
+                className={`chip chip--sm${iso === date ? " chip--on" : ""}`}
+                aria-pressed={iso === date}
+                onClick={() => setDate(iso)}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="field">
+        <span className="field__label">
+          {e.start} · {e.length}
+        </span>
+        <TimeAndLength start={start} minutes={minutes} label={e.title} onChange={setTime} />
       </div>
       <button
         type="button"
         className="cta cta--small"
-        disabled={!date || !start}
         onClick={() => {
           const id = planSession(team, date, start, minutes);
           onClose();

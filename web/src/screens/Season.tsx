@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+import { AppLink } from "../components/AppLink";
 import { BottomNav, TopBar } from "../components/Chrome";
 import { Sheet } from "../components/Sheet";
 import { Stepper } from "../components/Stepper";
@@ -132,7 +133,7 @@ export function Season() {
                 .join(" · ");
               return (
                 <li key={s.id}>
-                  <Link to={`/pass/${s.id}`} className="row">
+                  <AppLink to={`/pass/${s.id}`} className="row">
                     <span className="row__icon">{s.focus?.[0] ? S.skillIcons[s.focus[0]] : "🏒"}</span>
                     <span className="row__day" style={{ fontSize: 22 }}>
                       {formatDayShort(parseISODate(s.date))}
@@ -153,7 +154,7 @@ export function Season() {
                     <span aria-hidden="true" className="muted">
                       ›
                     </span>
-                  </Link>
+                  </AppLink>
                 </li>
               );
             })}

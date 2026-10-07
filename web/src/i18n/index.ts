@@ -31,6 +31,11 @@ export function shortDay(date: string, today: Date): string {
   return S.weekdaysShort[isoWeekday(parseISODate(date)) - 1];
 }
 
+/** "17:15" → "17.15" (Swedish clock format). Times are stored as "HH:MM". */
+export function formatTime(hhmm: string): string {
+  return hhmm.replace(":", ".");
+}
+
 /** "Skridsko & puckkontroll" */
 export function focusTitle(skills: Skill[]): string {
   return skills.map((s, i) => (i === 0 ? S.skills[s] : S.skills[s].toLowerCase())).join(" & ");

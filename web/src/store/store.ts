@@ -34,13 +34,53 @@ function initialState(): AppState {
   };
 }
 
+const list = <T>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
+
+/**
+ * Saved data (or an imported backup) is not trusted to be well-formed: drop
+ * records the screens can't render instead of crashing on every start.
+ */
+export function normalizeState(raw: unknown): AppState {
+  const base = initialState();
+  if (!isObj(raw) || raw.version !== 1) return base;
+  const teams = list<Team>(raw.teams)
+    .filter((t) => isObj(t) && typeof t.id === "string" && typeof t.ageGroupId === "string")
+    .map((t) => ({
+      ...t,
+      schedule: list<Team["schedule"][number]>(t.schedule).filter((x) => isObj(x) && typeof x.start === "string")
+    }));
+  const sessions = list<Session>(raw.sessions)
+    .filter(
+      (s) =>
+        isObj(s) &&
+        typeof s.id === "string" &&
+        typeof s.date === "string" &&
+        typeof s.start === "string" &&
+        Array.isArray(s.parts)
+    )
+    .map((s) => ({
+      ...s,
+      focus: list<Session["focus"][number]>(s.focus),
+      equipmentChecked: list<Session["equipmentChecked"][number]>(s.equipmentChecked)
+    }));
+  const curricula = list<Curriculum>(raw.curricula).filter((c) => isObj(c) && Array.isArray(c.blocks));
+  return {
+    version: 1,
+    teams,
+    activeTeamId: typeof raw.activeTeamId === "string" ? raw.activeTeamId : null,
+    curricula: curricula.length > 0 ? curricula : base.curricula,
+    ownDrills: list<Drill>(raw.ownDrills).filter((d) => isObj(d) && typeof d.id === "string" && Array.isArray(d.skills)),
+    ownTemplates: list<SessionTemplate>(raw.ownTemplates).filter((t) => isObj(t) && Array.isArray(t.parts)),
+    sessions,
+    notes: list<SessionNote>(raw.notes).filter((n) => isObj(n) && typeof n.sessionId === "string")
+  };
+}
+
 function load(): AppState {
   try {
     const raw = readItem(KEY);
-    if (!raw) return initialState();
-    const parsed = JSON.parse(raw) as Partial<AppState>;
-    if (parsed.version !== 1) return initialState();
-    return { ...initialState(), ...parsed };
+    return raw ? normalizeState(JSON.parse(raw)) : initialState();
   } catch {
     return initialState();
   }
@@ -72,8 +112,8 @@ export function setState(update: (s: AppState) => AppState) {
 }
 
 /** Replace everything (backup import). */
-export function replaceState(next: AppState) {
-  setState(() => ({ ...initialState(), ...next }));
+export function replaceState(next: unknown) {
+  setState(() => normalizeState(next));
 }
 
 function subscribe(listener: () => void) {

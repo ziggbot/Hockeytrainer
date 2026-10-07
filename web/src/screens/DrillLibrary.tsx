@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { AppLink } from "../components/AppLink";
 import { BottomNav, TopBar } from "../components/Chrome";
 import { filterDrills } from "../components/DrillPicker";
 import { ICE_AREAS, SKILLS, type IceArea, type Skill } from "../domain/types";
@@ -101,7 +102,7 @@ export function DrillLibrary() {
         <ul className="rows">
           {list.map((d) => (
             <li key={d.id}>
-              <Link to={`/ovningar/${d.id}`} className="row row--compact">
+              <AppLink to={`/ovningar/${d.id}`} className="row row--compact">
                 <span className="row__icon">{S.skillIcons[d.skills[0]]}</span>
                 <span className="row__main">
                   <div className="row__title">
@@ -114,7 +115,7 @@ export function DrillLibrary() {
                 <span aria-hidden="true" className="muted">
                   ›
                 </span>
-              </Link>
+              </AppLink>
             </li>
           ))}
         </ul>
@@ -124,9 +125,9 @@ export function DrillLibrary() {
           </p>
         )}
 
-        <Link to="/ovningar/ny" className="btn" style={{ marginTop: 22 }}>
+        <AppLink to="/ovningar/ny" className="btn" style={{ marginTop: 22 }}>
           + {t.newDrill}
-        </Link>
+        </AppLink>
       </main>
       <BottomNav />
     </>

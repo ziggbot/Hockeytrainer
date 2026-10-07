@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { BackBar } from "../components/Chrome";
 import { ConfirmButton } from "../components/ConfirmButton";
 import { Stepper } from "../components/Stepper";
+import { TimeAndLength } from "../components/TimeAndLength";
 import { AGE_GROUPS } from "../content/curricula";
 import type { Team, TrainingTime } from "../domain/types";
 import { S } from "../i18n";
@@ -70,36 +71,20 @@ export function TeamSettings() {
           {[...team.schedule]
             .sort((a, b) => a.weekday - b.weekday || a.start.localeCompare(b.start))
             .map((time) => (
-              <li key={time.id} style={{ padding: "12px 0", borderBottom: "1.5px dashed var(--line)" }}>
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+              <li key={time.id} className="time-row">
+                <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "space-between" }}>
                   <select
-                    className="input input--sm"
+                    className="input input--sm time-row__day"
                     aria-label={t.day}
                     value={time.weekday}
                     onChange={(e) => patchTime(time.id, { weekday: Number(e.target.value) })}
                   >
                     {S.weekdays.map((d, i) => (
                       <option key={d} value={i + 1}>
-                        {d}
+                        {d.charAt(0).toUpperCase() + d.slice(1)}
                       </option>
                     ))}
                   </select>
-                  <input
-                    className="input input--sm"
-                    type="time"
-                    aria-label={t.start}
-                    value={time.start}
-                    onChange={(e) => e.target.value && patchTime(time.id, { start: e.target.value })}
-                  />
-                  <Stepper
-                    value={time.minutes}
-                    onChange={(v) => patchTime(time.id, { minutes: v })}
-                    min={15}
-                    max={180}
-                    step={5}
-                    label={t.length}
-                    format={S.ui.common.minutes}
-                  />
                   <button
                     type="button"
                     className="btn btn--icon"
@@ -109,6 +94,12 @@ export function TeamSettings() {
                     ✕
                   </button>
                 </div>
+                <TimeAndLength
+                  start={time.start}
+                  minutes={time.minutes}
+                  label={S.weekdays[time.weekday - 1]}
+                  onChange={(next) => patchTime(time.id, next)}
+                />
               </li>
             ))}
         </ul>

@@ -14,7 +14,7 @@ import {
 import { equipmentFor } from "./equipment";
 import { insertGather, setPartMinutes } from "./editParts";
 import { decodeShare, encodeShare } from "./share";
-import { nextSlot, upcomingSlots } from "./schedule";
+import { nextSlot, upcomingSlots, weekSlots } from "./schedule";
 import { AGE_GROUPS, SEED_CURRICULA } from "../content/curricula";
 import { SEED_DRILLS } from "../content/drills";
 import { SEED_TEMPLATES } from "../content/templates";
@@ -374,6 +374,16 @@ describe("schedule", () => {
     const slots = upcomingSlots(team, [planned], parseISODate("2026-10-07")); // Wednesday
     expect(slots.map((s) => `${s.date} ${s.start}`)).toEqual(["2026-10-08 17:15", "2026-10-13 18:00"]);
     expect(slots[0].session).toBe(planned);
+  });
+
+  it("lists the calendar week Monday first", () => {
+    const mon: Team = { ...team, schedule: [...team.schedule, { id: "c", weekday: 1, start: "17:00", minutes: 60 }] };
+    const wed = parseISODate("2026-10-07");
+    const slots = weekSlots(mon, [], wed);
+    expect(slots.map((s) => `${s.date} ${s.start}`)).toEqual(["2026-10-05 17:00", "2026-10-06 18:00", "2026-10-08 17:15"]);
+    // Sunday still shows the week that ends today.
+    expect(weekSlots(mon, [], parseISODate("2026-10-11"))[0].date).toBe("2026-10-05");
+    expect(weekSlots(mon, [], parseISODate("2026-10-12"))[0].date).toBe("2026-10-12");
   });
 
   it("keeps a practice in progress as the next slot", () => {

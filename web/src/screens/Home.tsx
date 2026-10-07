@@ -6,13 +6,12 @@ import { Check } from "../components/Check";
 import { Sheet } from "../components/Sheet";
 import { TimeAndLength } from "../components/TimeAndLength";
 import { useNow } from "../components/useNow";
-import { currentBlock } from "../domain/curriculum";
 import { addDays, toISODate } from "../domain/dates";
 import { drillIdsOf } from "../domain/planner";
-import { nextSlot, upcomingSlots, type Slot } from "../domain/schedule";
+import { nextSlot, upcomingSlots, weekSlots, type Slot } from "../domain/schedule";
 import { SKILLS, type Team } from "../domain/types";
 import { S, formatDayLong, formatDayShort, formatTime, relativeDay, shortDay } from "../i18n";
-import { activeTeam, curriculumOf, planSession, previewPlan, setDone } from "../store/actions";
+import { activeTeam, planSession, previewPlan, setDone } from "../store/actions";
 import { useAppState } from "../store/store";
 import { Onboarding } from "./Onboarding";
 
@@ -28,9 +27,9 @@ export function Home() {
   if (!team) return <Onboarding />;
 
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const pos = currentBlock(curriculumOf(team, state), now);
-  const slots = upcomingSlots(team, state.sessions, today, 7);
-  const next = nextSlot(slots, now);
+  const slots = weekSlots(team, state.sessions, today);
+  // The big button looks a week ahead, past the end of the calendar week.
+  const next = nextSlot(upcomingSlots(team, state.sessions, today, 7), now);
   const doneCount = slots.filter((s) => s.session?.status === "done").length;
 
   /** Planned session id for a slot, planning it from the season block if needed. */
@@ -61,12 +60,6 @@ export function Home() {
           <button type="button" className="cta" onClick={() => setExtraOpen(true)}>
             {t.extra}
           </button>
-        )}
-
-        {pos && (
-          <p className="sub" style={{ textAlign: "center", marginTop: 4 }}>
-            {S.skillIcons[pos.block.focus[0]]} {pos.block.name}
-          </p>
         )}
 
         <section className="section">

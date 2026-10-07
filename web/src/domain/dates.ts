@@ -26,6 +26,9 @@ export function isoWeekday(d: Date): number {
   return d.getDay() === 0 ? 7 : d.getDay();
 }
 
+/** Monday of the ISO week that contains `d`. */
+export const startOfIsoWeek = (d: Date): Date => addDays(d, 1 - isoWeekday(d));
+
 /** ISO 8601 week number (weeks start Monday; week 1 contains Jan 4). */
 export function isoWeek(d: Date): number {
   return isoWeekAndYear(d).week;

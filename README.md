@@ -27,7 +27,7 @@ The preview routes in memory and has no service worker (the sandbox forbids it),
 ## How it works
 
 1. **First run:** team name, age group (U8–Junior), training days and ice time.
-2. **Träna (home):** the next ice time with a suggested plan built from the current **season block** (e.g. U10, weeks 34–41 → *Skridskoteknik*). **Nu kör vi** opens rink mode. *Den här veckan* lists the rolling 7 days.
+2. **Träna (home):** the next ice time with a suggested plan built from the current **season block** (e.g. U10, weeks 34–41 → *Skridskoteknik*). **Nu kör vi** opens rink mode. *Den här veckan* lists the calendar week, Monday first; the big button still finds the next ice time across the week boundary.
 3. **Session:** running order with clock times, total vs. ice time, edit mode (minutes ±, reorder, swap, add, station rotations, *Nytt förslag*), equipment checklist, notes, share link.
 4. **Rink mode:** tap "Starta passet" once; the screen then follows the clock. The feed scrolls to the running part, a timeline on the right ticks along, and it beeps/vibrates at each new part or station rotation. No taps needed with gloves on. Stations show which group is where (already during the gathering, so the coach can split the groups); each coach can mark *their* station. Ends with quick tags + a note.
 5. **Övningar:** 41 seed drills. Filter by age, skill, ice area and length. Coaches can add their own drills, with a photo of a whiteboard sketch.

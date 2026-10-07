@@ -1,5 +1,5 @@
 import type { Session, Team } from "./types";
-import { addDays, isoWeekday, timeToMinutes, toISODate } from "./dates";
+import { addDays, isoWeekday, startOfIsoWeek, timeToMinutes, toISODate } from "./dates";
 
 // Upcoming ice times: the team's weekly schedule (stand-in for the iCal
 // feed, spec §5.9) merged with sessions already planned. A slot without a
@@ -35,6 +35,11 @@ export function upcomingSlots(team: Team, sessions: Session[], from: Date, days 
     byKey.set(slotKey(s.date, s.start), { date: s.date, start: s.start, minutes: s.minutes, session: s });
   }
   return [...byKey.values()].sort((a, b) => a.date.localeCompare(b.date) || timeToMinutes(a.start) - timeToMinutes(b.start));
+}
+
+/** The calendar week (Monday–Sunday) that contains `day`, Monday first. */
+export function weekSlots(team: Team, sessions: Session[], day: Date): Slot[] {
+  return upcomingSlots(team, sessions, startOfIsoWeek(day), 7);
 }
 
 /**

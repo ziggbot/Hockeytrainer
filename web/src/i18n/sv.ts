@@ -109,7 +109,6 @@ export const sv = {
       label: "Huvudmeny"
     },
     home: {
-      hello: "Hej tränare.",
       go: "Nu kör vi",
       addTimes: "Lägg till träningstider",
       nextLabel: (when: string) => `Nästa pass · ${when}`,
@@ -247,6 +246,7 @@ export const sv = {
     },
     team: {
       title: "Laget",
+      coachName: "Ditt namn",
       name: "Lagets namn",
       namePlaceholder: "t.ex. U10 Blå",
       ageGroup: "Åldersgrupp",

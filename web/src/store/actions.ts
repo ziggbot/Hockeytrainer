@@ -24,7 +24,7 @@ import { AGE_GROUPS } from "../content/curricula";
 import { SEED_DRILLS } from "../content/drills";
 import { SEED_TEMPLATES } from "../content/templates";
 import { focusTitle } from "../i18n";
-import { getState, newId, nowIso, setState, type AppState } from "./store";
+import { MAX_COACH_NAME, getState, newId, nowIso, setState, type AppState } from "./store";
 
 export function allDrills(s: AppState = getState()): Drill[] {
   return [...SEED_DRILLS, ...s.ownDrills];
@@ -43,6 +43,10 @@ export function activeTeam(s: AppState = getState()): Team | undefined {
 }
 
 const withIds = (parts: PartDraft[]): SessionPart[] => parts.map((p) => ({ ...p, id: newId() }) as SessionPart);
+
+export function setCoachName(name: string) {
+  setState((s) => ({ ...s, coachName: name.slice(0, MAX_COACH_NAME) }));
+}
 
 // ── Teams ──────────────────────────────────────────────────────
 

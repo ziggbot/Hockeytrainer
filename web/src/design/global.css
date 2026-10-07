@@ -114,14 +114,13 @@ a[role="link"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   padding: 4px 0;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
   font-family: var(--display);
   font-weight: 700;
   font-size: 20px;
@@ -129,7 +128,20 @@ a[role="link"] {
   text-transform: uppercase;
   text-decoration: none;
   white-space: nowrap;
-  flex-shrink: 0;
+  min-width: 0;
+  gap: 6px;
+}
+
+/* "TRÄNARAPPEN – Anna": a long coach name ends in "…". */
+.logo__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logo__coach {
+  text-transform: none;
+  letter-spacing: 0.3px;
 }
 
 .logo svg {
@@ -143,9 +155,9 @@ a[role="link"] {
   height: 44px;
 }
 
-/* Smallest phones: the crest alone, so the team chip keeps room for its name. */
+/* Smallest phones: crest and coach name only, so the team chip keeps room. */
 @media (max-width: 359px) {
-  .logo__name--squeeze {
+  .logo__app {
     display: none;
   }
 }
@@ -506,10 +518,11 @@ a[role="link"] {
   font-size: 14px;
 }
 
-/* Long team names in the header shrink with "…" instead of widening the page. */
+/* The team chip keeps its width (up to a cap, then "…"); the coach name gives way first. */
 .topbar .chip {
   min-width: 0;
-  flex-shrink: 1;
+  flex-shrink: 0;
+  max-width: 45%;
 }
 
 .chip__text {

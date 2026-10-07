@@ -39,8 +39,7 @@ export function Home() {
     <>
       <main className="page">
         <TopBar />
-        <h1 className="hello">{t.hello}</h1>
-        <p className="sub">
+        <p className="sub" style={{ marginTop: 10 }}>
           {formatDayLong(now)} · {t.doneCount(doneCount, slots.length)}
         </p>
 

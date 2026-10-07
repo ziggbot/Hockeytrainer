@@ -52,6 +52,10 @@ describe("loading saved data", () => {
     expect(s.curricula.length).toBeGreaterThan(0);
     expect(s.notes).toHaveLength(1);
     expect(normalizeState("garbage").teams).toEqual([]);
+    // Older saves have no coach name; a non-string is dropped.
+    expect(s.coachName).toBe("");
+    expect(normalizeState({ version: 1, coachName: 42 }).coachName).toBe("");
+    expect(normalizeState({ version: 1, coachName: "Anna" }).coachName).toBe("Anna");
   });
 });
 

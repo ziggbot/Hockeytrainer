@@ -9,6 +9,8 @@ import { readItem, writeItem } from "./storage";
 
 export interface AppState {
   version: 1;
+  /** The coach's own name, shown in the header. Never player data. */
+  coachName: string;
   teams: Team[];
   activeTeamId: string | null;
   /** Club curricula — seeded copy, editable by the club admin. */
@@ -20,10 +22,12 @@ export interface AppState {
 }
 
 const KEY = "hockeytrainer.v1";
+export const MAX_COACH_NAME = 60;
 
 function initialState(): AppState {
   return {
     version: 1,
+    coachName: "",
     teams: [],
     activeTeamId: null,
     curricula: SEED_CURRICULA,
@@ -67,6 +71,7 @@ export function normalizeState(raw: unknown): AppState {
   const curricula = list<Curriculum>(raw.curricula).filter((c) => isObj(c) && Array.isArray(c.blocks));
   return {
     version: 1,
+    coachName: typeof raw.coachName === "string" ? raw.coachName.slice(0, MAX_COACH_NAME) : "",
     teams,
     activeTeamId: typeof raw.activeTeamId === "string" ? raw.activeTeamId : null,
     curricula: curricula.length > 0 ? curricula : base.curricula,

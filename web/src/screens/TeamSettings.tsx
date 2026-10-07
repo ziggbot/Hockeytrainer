@@ -8,7 +8,7 @@ import { AGE_GROUPS } from "../content/curricula";
 import type { Team, TrainingTime } from "../domain/types";
 import { S } from "../i18n";
 import { IS_ARTIFACT } from "../platform";
-import { activeTeam, deleteTeam, newTrainingTime, setActiveTeam, updateTeam } from "../store/actions";
+import { activeTeam, deleteTeam, newTrainingTime, setActiveTeam, setCoachName, updateTeam } from "../store/actions";
 import { getState, replaceState, useAppState, type AppState } from "../store/store";
 
 const t = S.ui.team;
@@ -28,6 +28,16 @@ export function TeamSettings() {
     <main className="page page--bare">
       <BackBar to="/" />
       <h1 className="title">{t.title}</h1>
+
+      <label className="field">
+        <span className="field__label">{t.coachName}</span>
+        <input
+          className="input"
+          value={state.coachName}
+          autoComplete="given-name"
+          onChange={(e) => setCoachName(e.target.value)}
+        />
+      </label>
 
       <label className="field">
         <span className="field__label">{t.name}</span>

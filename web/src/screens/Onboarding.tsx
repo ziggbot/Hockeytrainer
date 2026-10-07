@@ -5,12 +5,13 @@ import { Stepper } from "../components/Stepper";
 import { TimeAndLength } from "../components/TimeAndLength";
 import { AGE_GROUPS } from "../content/curricula";
 import { S } from "../i18n";
-import { createTeam, newTrainingTime } from "../store/actions";
+import { createTeam, newTrainingTime, setCoachName } from "../store/actions";
 
 const t = S.ui.onboarding;
 
 /** First run (and "Nytt lag"): team name, age group, weekly ice times. */
 export function Onboarding({ onDone, showBack = false }: { onDone?: () => void; showBack?: boolean }) {
+  const [coach, setCoach] = useState("");
   const [name, setName] = useState("");
   const [ageGroupId, setAgeGroupId] = useState("u10");
   // One entry per training day, each with its own start and ice time.
@@ -32,6 +33,7 @@ export function Onboarding({ onDone, showBack = false }: { onDone?: () => void; 
   const submit = () => {
     if (!name.trim()) return setError(t.needName);
     if (times.length === 0) return setError(t.needDay);
+    if (coach.trim()) setCoachName(coach.trim());
     createTeam({
       name: name.trim(),
       ageGroupId,
@@ -55,6 +57,13 @@ export function Onboarding({ onDone, showBack = false }: { onDone?: () => void; 
       )}
       <h1 className="hello">{t.hello}</h1>
       <p className="sub">{t.sub}</p>
+
+      {!showBack && (
+        <label className="field">
+          <span className="field__label">{S.ui.team.coachName}</span>
+          <input className="input" value={coach} autoComplete="given-name" onChange={(e) => setCoach(e.target.value)} />
+        </label>
+      )}
 
       <label className="field">
         <span className="field__label">{S.ui.team.name}</span>

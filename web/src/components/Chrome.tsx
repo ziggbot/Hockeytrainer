@@ -10,15 +10,21 @@ import { activeTeam } from "../store/actions";
 export function TopBar() {
   const state = useAppState();
   const team = activeTeam(state);
+  const coach = state.coachName.trim();
   return (
     <header className="topbar">
       <AppLink to="/" className="logo">
         <AppMark />
-        <span className="logo__name logo__name--squeeze">{S.ui.appName}</span>
+        <span className="logo__name">
+          <span className="logo__app">
+            {S.ui.appName}
+            {coach && " – "}
+          </span>
+          {coach && <span className="logo__coach">{coach}</span>}
+        </span>
       </AppLink>
       {team && (
         <AppLink to="/lag" className="chip chip--sm" aria-label={S.ui.team.title}>
-          <span className="chip__icon">🏒</span>
           <span className="chip__text">{team.name}</span>
         </AppLink>
       )}

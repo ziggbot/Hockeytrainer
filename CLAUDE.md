@@ -13,7 +13,8 @@ Simple, clear and usable rink-side beats feature-rich. Keep to these patterns:
 
 - Fonts: **Inter** (400/600/700) for reading; **Barlow Condensed** 600/700 in caps for headings, labels and clocks (`.display`). Bundled via `@fontsource` so they work offline. Never load fonts from a CDN.
 - Light ground (`--bg`) with white cards (`--surface`); dark text on light — it reads best in a bright arena. All colours are tokens in `web/src/design/global.css`.
-- One primary button per screen: `.cta` (blue `--accent`). Everything else: `.btn` / `.chip` pills, `.link`.
+- One primary button per screen: `.cta` in Färjestad green (`--cta`, sampled from the club crest). Everything else: `.btn` / `.chip` pills, `.link` (blue `--accent`).
+- The club's crest (`web/public/club-logo.png`, cut out from the club's own artwork) is the symbol top left (`AppMark`). The claude.ai preview build shows the neutral stick-and-puck mark instead: it is published outside the club's hosting and must not carry the club's branding.
 - Stations are always **colour + letter** (A red, B blue, C green, D purple) via `stationStyle(i)` — never colour alone.
 - Lists: `.rows` is a white card; `.row` = icon · time/day label · title + grey sub-line · checkbox.
 - Tap targets ≥ 44px.

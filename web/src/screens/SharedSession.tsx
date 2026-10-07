@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { LogoMark } from "../components/Icons";
+import { AppMark } from "../components/AppMark";
 import { stationStyle } from "../components/stationColor";
 import { SEED_DRILLS } from "../content/drills";
 import { minutesToTime, parseISODate, timeToMinutes } from "../domain/dates";
@@ -41,7 +41,7 @@ export function SharedSession() {
       <main className="page page--bare">
         <header className="topbar">
           <span className="logo">
-            <LogoMark />
+            <AppMark />
             {S.ui.appName}
           </span>
         </header>
@@ -70,7 +70,7 @@ export function SharedSession() {
     <main className="page page--bare">
       <header className="topbar">
         <span className="logo">
-          <LogoMark />
+          <AppMark />
           {S.ui.appName}
         </span>
         {shared.team && <span className="chip chip--sm">{shared.team}</span>}

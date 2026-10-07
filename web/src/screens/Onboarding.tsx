@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BackBar } from "../components/Chrome";
-import { LogoMark } from "../components/Icons";
+import { AppMark } from "../components/AppMark";
 import { Stepper } from "../components/Stepper";
 import { TimeAndLength } from "../components/TimeAndLength";
 import { AGE_GROUPS } from "../content/curricula";
@@ -48,7 +48,7 @@ export function Onboarding({ onDone, showBack = false }: { onDone?: () => void; 
       ) : (
         <header className="topbar">
           <span className="logo">
-            <LogoMark />
+            <AppMark />
             {S.ui.appName}
           </span>
         </header>

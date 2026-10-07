@@ -2,7 +2,7 @@
 
 Plan and run youth ice hockey practices from the club's season plan. Swedish UI, works rink-side with no signal. Product spec: [`SPEC_hockey.md`](SPEC_hockey.md).
 
-Design "Isen" (see `docs/decisions/0002-design-b-isen.md`): white cards on light grey, Inter + Barlow Condensed, one blue **"Nu kör vi"** button, colour + letter per station.
+Design "Isen" (see `docs/decisions/0002-design-b-isen.md`): white cards on light grey, Inter + Barlow Condensed, the club crest top left, one Färjestad-green **"Nu kör vi"** button, colour + letter per station.
 
 ## Run it
 

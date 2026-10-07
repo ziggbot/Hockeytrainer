@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { AppLink } from "./AppLink";
 import type { ReactNode } from "react";
-import { LogoMark } from "./Icons";
+import { AppMark } from "./AppMark";
 import { S } from "../i18n";
 import { useAppState } from "../store/store";
 import { activeTeam } from "../store/actions";
@@ -13,8 +13,8 @@ export function TopBar() {
   return (
     <header className="topbar">
       <AppLink to="/" className="logo">
-        <LogoMark />
-        {S.ui.appName}
+        <AppMark />
+        <span className="logo__name logo__name--squeeze">{S.ui.appName}</span>
       </AppLink>
       {team && (
         <AppLink to="/lag" className="chip chip--sm" aria-label={S.ui.team.title}>

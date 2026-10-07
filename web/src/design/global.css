@@ -1,6 +1,7 @@
 /* "Isen" — sports-app look chosen by the club (design B): white cards on a
    cool light-grey ground, Inter for reading, Barlow Condensed caps for
-   headings and clocks, one blue accent, a colour + letter per station.
+   headings and clocks, one blue accent, the primary button in Färjestad
+   green, a colour + letter per station.
    Light background on purpose: dark text on light reads best in a bright
    arena. */
 
@@ -23,6 +24,10 @@
   --accent-strong: #094a8c;
   --accent-soft: #e6f0fa;
   --on-accent: #ffffff;
+  /* Primary button in Färjestad green (sampled from the club crest). */
+  --cta: #449864;
+  --cta-strong: #357a4f;
+  --cta-shadow: rgba(68, 152, 100, 0.3);
   --area: #b9d3ee;
   --danger: #c2410c;
   --danger-soft: #fdeee6;
@@ -132,6 +137,19 @@ a[role="link"] {
   color: var(--accent);
 }
 
+.logo__crest {
+  flex: none;
+  width: auto;
+  height: 44px;
+}
+
+/* Smallest phones: the crest alone, so the team chip keeps room for its name. */
+@media (max-width: 359px) {
+  .logo__name--squeeze {
+    display: none;
+  }
+}
+
 .back {
   display: inline-flex;
   align-items: center;
@@ -213,8 +231,8 @@ a[role="link"] {
   padding: 16px 12px;
   border: 0;
   border-radius: var(--radius);
-  background: var(--accent);
-  box-shadow: 0 6px 16px rgba(11, 92, 173, 0.25);
+  background: var(--cta);
+  box-shadow: 0 6px 16px var(--cta-shadow);
   font-family: var(--display);
   font-weight: 700;
   font-size: 34px;
@@ -227,7 +245,7 @@ a[role="link"] {
 }
 
 .cta:active {
-  background: var(--accent-strong);
+  background: var(--cta-strong);
 }
 
 .cta:disabled {

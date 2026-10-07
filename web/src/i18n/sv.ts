@@ -72,6 +72,7 @@ export const sv = {
   ],
   ui: {
     appName: "Tränarappen",
+    clubName: "Färjestad BK",
     common: {
       today: "Idag",
       tomorrow: "Imorgon",

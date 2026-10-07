@@ -127,6 +127,11 @@ export function SharedSession() {
                     </details>
                   );
                 })}
+                {part.type === "stations" && part.freeZone && (
+                  <div className="row__title" style={{ marginTop: 6 }}>
+                    ⭕ {S.ui.session.freeZone}
+                  </div>
+                )}
               </li>
             );
           })}

@@ -50,7 +50,6 @@ export function Season() {
         <section className="section">
           <div className="section__head">
             <h2>{t.blocks}</h2>
-            <span className="section__note">{t.blocksNote}</span>
           </div>
           <ul className="rows">
             {curriculum?.blocks.map((block) => {
@@ -85,7 +84,6 @@ export function Season() {
               );
             })}
           </ul>
-          <p className="notice">{t.draftNote}</p>
         </section>
 
         {curriculum && (
@@ -116,7 +114,6 @@ export function Season() {
         <section className="section">
           <div className="section__head">
             <h2>{t.recent}</h2>
-            <span className="section__note">{t.recentNote}</span>
           </div>
           {recent.length === 0 && (
             <p className="sub" style={{ marginTop: 12 }}>

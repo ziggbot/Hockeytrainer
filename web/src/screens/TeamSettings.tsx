@@ -65,7 +65,6 @@ export function TeamSettings() {
       <section className="section">
         <div className="section__head">
           <h2>{t.times}</h2>
-          <span className="section__note">{t.timesNote}</span>
         </div>
         <ul className="rows">
           {[...team.schedule]

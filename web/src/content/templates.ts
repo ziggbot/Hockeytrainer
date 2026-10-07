@@ -1,8 +1,9 @@
 import type { SessionTemplate } from "../domain/types";
 
-// Curated session templates (spec §4 SessionTemplate). The planner prefers
-// these when one matches the team's age group and current block focus, and
-// scales the minutes to the ice slot. Otherwise it builds a session itself.
+// Curated sessions in the club's standard shape: warm-up → (whole-group
+// focus drill on longer ice) → 4 stations with a free zone in the middle →
+// game. The planner sets the minutes from the ice time in 5-minute steps.
+// Stations must be drills that fit half an end zone (area "station"/"third").
 
 export const SEED_TEMPLATES: SessionTemplate[] = [
   {
@@ -10,100 +11,79 @@ export const SEED_TEMPLATES: SessionTemplate[] = [
     title: "Skridskoglädje",
     ageGroupIds: ["u8"],
     focus: ["skating"],
-    parts: [
-      { type: "drill", drillId: "w-redlight", minutes: 5 },
-      { type: "stations", minutesPerStation: 7, drillIds: ["s-obstacle", "s-edges", "p-slalom", "s-falls"] },
-      { type: "drill", drillId: "g-crossice", minutes: 12 }
-    ]
+    warmup: "w-redlight",
+    extras: ["g-nest"],
+    stations: ["s-obstacle", "s-edges", "s-falls", "p-slalom"],
+    game: "g-crossice"
   },
   {
     id: "t-u8-puck",
     title: "Puck på klubban",
     ageGroupIds: ["u8"],
     focus: ["puckHandling"],
-    parts: [
-      { type: "drill", drillId: "w-follow", minutes: 6 },
-      { type: "stations", minutesPerStation: 7, drillIds: ["p-ownspace", "p-slalom", "pa-gates"] },
-      { type: "drill", drillId: "g-nest", minutes: 6 },
-      { type: "drill", drillId: "g-crossice", minutes: 12 }
-    ]
+    warmup: "w-follow",
+    extras: ["g-nest"],
+    stations: ["p-ownspace", "p-slalom", "pa-gates", "s-obstacle"],
+    game: "g-crossice"
   },
   {
     id: "t-u10-passshoot",
     title: "Passa och skjut",
     ageGroupIds: ["u10"],
     focus: ["passing", "shooting"],
-    parts: [
-      { type: "drill", drillId: "w-passwarm", minutes: 5 },
-      { type: "stations", minutesPerStation: 8, drillIds: ["pa-triangle", "sh-dribble", "sh-wrist"] },
-      { type: "drill", drillId: "g-3v3", minutes: 12 }
-    ]
+    warmup: "w-passwarm",
+    extras: ["sh-wrist"],
+    stations: ["pa-triangle", "pa-gates", "sh-rebounds", "sh-backhand"],
+    game: "g-3v3"
   },
   {
     id: "t-u10-skating",
     title: "Skridsko i fart",
     ageGroupIds: ["u10"],
     focus: ["skating", "puckHandling"],
-    parts: [
-      { type: "drill", drillId: "w-kull", minutes: 5 },
-      { type: "drill", drillId: "s-crossovers", minutes: 7 },
-      { type: "stations", minutesPerStation: 7, drillIds: ["s-tightturns", "s-backward", "p-headsup"] },
-      { type: "drill", drillId: "g-crossice", minutes: 12 }
-    ]
+    warmup: "w-kull",
+    extras: ["s-crossovers"],
+    stations: ["s-edges", "s-pivots", "p-slalom", "p-headsup"],
+    game: "g-crossice"
   },
   {
     id: "t-u12-gamesense",
     title: "Spela ihop",
     ageGroupIds: ["u12"],
     focus: ["gameSense", "passing"],
-    parts: [
-      { type: "drill", drillId: "w-passwarm", minutes: 5 },
-      { type: "drill", drillId: "pa-moving", minutes: 8 },
-      { type: "drill", drillId: "pa-givego", minutes: 8 },
-      { type: "drill", drillId: "g-keepaway", minutes: 8 },
-      { type: "drill", drillId: "g-4nets", minutes: 12 }
-    ]
+    warmup: "w-passwarm",
+    extras: ["pa-givego"],
+    stations: ["pa-triangle", "g-keepaway", "g-3v3", "p-protect"],
+    game: "g-4nets"
   },
   {
     id: "t-u12-shooting",
     title: "Avslut",
     ageGroupIds: ["u12", "u14"],
     focus: ["shooting"],
-    parts: [
-      { type: "drill", drillId: "w-mobility", minutes: 6 },
-      { type: "drill", drillId: "sh-wrist", minutes: 8 },
-      { type: "drill", drillId: "sh-passshot", minutes: 8 },
-      { type: "drill", drillId: "sh-rebounds", minutes: 6 },
-      { type: "drill", drillId: "g-2v1", minutes: 10 },
-      { type: "drill", drillId: "g-3v3", minutes: 10 }
-    ]
+    warmup: "w-mobility",
+    extras: ["sh-passshot"],
+    stations: ["sh-rebounds", "sh-backhand", "pa-triangle", "p-drag"],
+    game: "g-3v3"
   },
   {
     id: "t-u14-battles",
     title: "Närkamp och försvar",
     ageGroupIds: ["u12", "u14", "u16", "junior"],
     focus: ["battles"],
-    parts: [
-      { type: "drill", drillId: "w-mobility", minutes: 6 },
-      { type: "drill", drillId: "b-stick", minutes: 6 },
-      { type: "drill", drillId: "p-protect", minutes: 6 },
-      { type: "drill", drillId: "b-gap", minutes: 8 },
-      { type: "drill", drillId: "g-1v1corner", minutes: 8 },
-      { type: "drill", drillId: "g-3v3", minutes: 10 }
-    ]
+    warmup: "w-mobility",
+    extras: ["b-gap"],
+    stations: ["b-stick", "p-protect", "sh-rebounds", "g-3v3"],
+    game: "g-1v1corner"
   },
   {
     id: "t-u14-skating",
     title: "Skridskoteknik",
     ageGroupIds: ["u14", "u16", "junior"],
     focus: ["skating"],
-    parts: [
-      { type: "drill", drillId: "w-mobility", minutes: 6 },
-      { type: "drill", drillId: "s-crossovers", minutes: 8 },
-      { type: "drill", drillId: "s-pivots", minutes: 8 },
-      { type: "drill", drillId: "s-tightturns", minutes: 6 },
-      { type: "drill", drillId: "s-stops", minutes: 6 },
-      { type: "drill", drillId: "g-4nets", minutes: 10 }
-    ]
+    warmup: "w-mobility",
+    extras: ["s-crossovers"],
+    stations: ["s-pivots", "p-drag", "pa-triangle", "b-stick"],
+    game: "g-4nets"
   }
 ];

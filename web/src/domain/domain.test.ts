@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { isoWeek, isoWeeksInYear, parseISODate } from "./dates";
 import { currentBlock } from "./curriculum";
-import { drillIdsOf, fitToMinutes, generatePlan, matchingTemplates, suggestPlan, totalMinutes } from "./planner";
+import { allocate, drillIdsOf, generatePlan, matchingTemplates, suggestPlan, templateDrillIds, totalMinutes } from "./planner";
 import { equipmentFor } from "./equipment";
 import { decodeShare, encodeShare } from "./share";
 import { nextSlot, upcomingSlots } from "./schedule";
@@ -9,6 +9,9 @@ import { AGE_GROUPS, SEED_CURRICULA } from "../content/curricula";
 import { SEED_DRILLS } from "../content/drills";
 import { SEED_TEMPLATES } from "../content/templates";
 import type { Drill, PartDraft, Session, Team } from "./types";
+
+const isStep = (m: number) => m > 0 && m % 5 === 0;
+const minutesOf = (parts: PartDraft[]) => parts.flatMap((p) => (p.type === "drill" ? [p.minutes] : [p.minutesPerStation]));
 
 const drillsById = new Map(SEED_DRILLS.map((d) => [d.id, d]));
 const ag = (id: string) => AGE_GROUPS.find((a) => a.id === id)!;
@@ -52,7 +55,7 @@ describe("seed content", () => {
 
   it("templates only use existing drills suitable for their age groups", () => {
     for (const t of SEED_TEMPLATES) {
-      for (const id of drillIdsOf(t.parts)) {
+      for (const id of templateDrillIds(t)) {
         const d = drillsById.get(id);
         expect(d, `${t.id} → ${id}`).toBeDefined();
         for (const g of t.ageGroupIds) {
@@ -61,6 +64,17 @@ describe("seed content", () => {
         }
       }
     }
+  });
+
+  it("templates have 4 different stations that fit half an end zone", () => {
+    for (const t of SEED_TEMPLATES) {
+      expect(new Set(t.stations).size, t.id).toBe(4);
+      for (const id of t.stations) expect(["station", "third"], `${t.id} → ${id}`).toContain(drillsById.get(id)!.iceArea);
+    }
+  });
+
+  it("seed drill lengths are whole 5-minute blocks", () => {
+    for (const d of SEED_DRILLS) expect(isStep(d.minutes), d.id).toBe(true);
   });
 
   it("every curriculum has blocks with 1–2 focus skills", () => {
@@ -73,16 +87,25 @@ describe("seed content", () => {
 });
 
 describe("planner", () => {
-  const parts: PartDraft[] = [
-    { type: "drill", drillId: "w-kull", minutes: 5 },
-    { type: "stations", minutesPerStation: 7, drillIds: ["s-edges", "s-obstacle", "p-slalom", "s-falls"] },
-    { type: "drill", drillId: "g-crossice", minutes: 12 }
-  ];
+  it.each([25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 120])("splits %i min into 5-minute segments", (t) => {
+    const a = allocate(t);
+    const sum = a.warmup + a.extras.reduce((x, y) => x + y, 0) + a.perStation * 4 + a.game;
+    expect(sum).toBe(t);
+    for (const m of [a.warmup, a.perStation, ...a.extras]) expect(isStep(m)).toBe(true);
+    expect(a.game % 5).toBe(0);
+    expect(a.game).toBeLessThanOrEqual(20);
+    expect(a.warmup).toBeLessThanOrEqual(10);
+    for (const m of a.extras) expect(m >= 10 && m <= 20).toBe(true);
+  });
 
-  it.each([30, 45, 50, 60, 75, 90])("fits a plan to %i minutes", (target) => {
-    const fitted = fitToMinutes(parts, target);
-    expect(totalMinutes(fitted)).toBe(target);
-    for (const p of fitted) expect(p.type === "drill" ? p.minutes : p.minutesPerStation).toBeGreaterThanOrEqual(3);
+  it("uses 4 × 5 min stations below an hour and 4 × 10 from an hour", () => {
+    expect(allocate(45)).toEqual({ warmup: 10, extras: [], perStation: 5, game: 15 });
+    expect(allocate(60)).toEqual({ warmup: 5, extras: [], perStation: 10, game: 15 });
+    expect(allocate(90)).toEqual({ warmup: 10, extras: [15, 10], perStation: 10, game: 15 });
+  });
+
+  it("skips the rotation when the ice time is too short", () => {
+    expect(allocate(20)).toEqual({ warmup: 5, extras: [], perStation: 0, game: 15 });
   });
 
   it("prefers a template matching the block focus", () => {
@@ -98,6 +121,8 @@ describe("planner", () => {
     });
     expect(s.templateId).toBe("t-u10-passshoot");
     expect(totalMinutes(s.parts)).toBe(50);
+    const stations = s.parts.find((p) => p.type === "stations");
+    expect(stations).toMatchObject({ drillIds: ["pa-triangle", "pa-gates", "sh-rebounds", "sh-backhand"], freeZone: true });
   });
 
   it("falls back to a generated plan after the templates run out", () => {
@@ -116,9 +141,9 @@ describe("planner", () => {
     expect(totalMinutes(s.parts)).toBe(45);
   });
 
-  it.each(AGE_GROUPS.map((a) => a.id))("generates an age-appropriate plan for %s in every block", (id) => {
+  it.each(AGE_GROUPS.map((a) => a.id))("generates warm-up, 4 stations + free zone and a game for %s", (id) => {
     for (const block of cur(id).blocks) {
-      for (const minutes of [45, 60]) {
+      for (const minutes of [45, 60, 90]) {
         const plan = generatePlan(
           {
             ageGroup: ag(id),
@@ -133,8 +158,11 @@ describe("planner", () => {
           0
         );
         expect(totalMinutes(plan.parts)).toBe(minutes);
+        for (const m of minutesOf(plan.parts)) expect(isStep(m)).toBe(true);
+        const stations = plan.parts.find((p) => p.type === "stations");
+        expect(stations?.type === "stations" && stations.drillIds.length, `${id} ${block.name}`).toBe(4);
+        expect(stations).toMatchObject({ freeZone: true });
         const ids = drillIdsOf(plan.parts);
-        expect(ids.length).toBeGreaterThanOrEqual(3);
         expect(new Set(ids).size).toBe(ids.length);
         expect(drillsById.get(ids[0])!.kind).toBe("warmup");
         expect(drillsById.get(ids[ids.length - 1])!.kind).toBe("game");

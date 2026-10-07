@@ -42,7 +42,7 @@ const seed: SeedDrill[] = [
     kind: "warmup",
     ageMin: 5,
     ageMax: 12,
-    minutes: 6,
+    minutes: 5,
     iceArea: "half",
     minPlayers: 4,
     equipment: [perPlayer("pucks")]
@@ -76,7 +76,7 @@ const seed: SeedDrill[] = [
     kind: "warmup",
     ageMin: 11,
     ageMax: 20,
-    minutes: 6,
+    minutes: 5,
     iceArea: "full",
     minPlayers: 1,
     equipment: []
@@ -116,7 +116,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 6,
     ageMax: 14,
-    minutes: 8,
+    minutes: 10,
     iceArea: "station",
     minPlayers: 1,
     equipment: [n("cones", 8)]
@@ -135,7 +135,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 7,
     ageMax: 20,
-    minutes: 8,
+    minutes: 10,
     iceArea: "half",
     minPlayers: 1,
     equipment: []
@@ -154,7 +154,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 6,
     ageMax: 20,
-    minutes: 6,
+    minutes: 5,
     iceArea: "full",
     minPlayers: 1,
     equipment: []
@@ -173,7 +173,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 6,
     ageMax: 14,
-    minutes: 6,
+    minutes: 5,
     iceArea: "half",
     minPlayers: 1,
     equipment: []
@@ -192,7 +192,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 9,
     ageMax: 20,
-    minutes: 8,
+    minutes: 10,
     iceArea: "station",
     minPlayers: 1,
     equipment: [n("cones", 4)]
@@ -207,7 +207,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 5,
     ageMax: 10,
-    minutes: 8,
+    minutes: 10,
     iceArea: "station",
     minPlayers: 1,
     equipment: [n("cones", 6), n("sticksOnIce", 4), n("tires", 2)]
@@ -222,7 +222,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 9,
     ageMax: 20,
-    minutes: 6,
+    minutes: 5,
     iceArea: "half",
     minPlayers: 1,
     equipment: [n("cones", 6)]
@@ -258,7 +258,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 6,
     ageMax: 14,
-    minutes: 6,
+    minutes: 5,
     iceArea: "station",
     minPlayers: 1,
     equipment: [perPlayer("pucks")]
@@ -277,7 +277,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 7,
     ageMax: 14,
-    minutes: 6,
+    minutes: 5,
     iceArea: "third",
     minPlayers: 4,
     equipment: [perPlayer("pucks")]
@@ -292,7 +292,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 6,
     ageMax: 14,
-    minutes: 8,
+    minutes: 10,
     iceArea: "station",
     minPlayers: 1,
     equipment: [n("cones", 8), perPlayer("pucks")]
@@ -311,8 +311,8 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 9,
     ageMax: 20,
-    minutes: 6,
-    iceArea: "half",
+    minutes: 5,
+    iceArea: "station",
     minPlayers: 2,
     equipment: [perPair("pucks")]
   },
@@ -326,7 +326,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 10,
     ageMax: 20,
-    minutes: 6,
+    minutes: 5,
     iceArea: "station",
     minPlayers: 1,
     equipment: [n("sticksOnIce", 4), perPlayer("pucks")]
@@ -343,7 +343,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 6,
     ageMax: 11,
-    minutes: 6,
+    minutes: 5,
     iceArea: "station",
     minPlayers: 2,
     equipment: [n("cones", 8), perPair("pucks")]
@@ -358,7 +358,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 9,
     ageMax: 20,
-    minutes: 8,
+    minutes: 10,
     iceArea: "full",
     minPlayers: 2,
     equipment: [perPair("pucks")]
@@ -373,7 +373,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 9,
     ageMax: 20,
-    minutes: 6,
+    minutes: 5,
     iceArea: "station",
     minPlayers: 3,
     equipment: [n("cones", 3), n("pucks", 3)]
@@ -388,7 +388,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 10,
     ageMax: 20,
-    minutes: 8,
+    minutes: 10,
     iceArea: "half",
     minPlayers: 4,
     equipment: [n("pucks", 20), n("goals", 1)]
@@ -407,7 +407,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 12,
     ageMax: 20,
-    minutes: 8,
+    minutes: 10,
     iceArea: "half",
     minPlayers: 4,
     equipment: [n("pucks", 20)]
@@ -428,7 +428,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 7,
     ageMax: 20,
-    minutes: 8,
+    minutes: 10,
     iceArea: "half",
     minPlayers: 1,
     equipment: [n("pucks", 30), n("goals", 1)]
@@ -443,7 +443,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 7,
     ageMax: 16,
-    minutes: 8,
+    minutes: 10,
     iceArea: "half",
     minPlayers: 2,
     equipment: [n("cones", 4), n("pucks", 30), n("goals", 1)]
@@ -462,7 +462,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 9,
     ageMax: 20,
-    minutes: 6,
+    minutes: 5,
     iceArea: "station",
     minPlayers: 2,
     equipment: [n("pucks", 20), n("goals", 1)]
@@ -481,7 +481,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 9,
     ageMax: 20,
-    minutes: 6,
+    minutes: 5,
     iceArea: "station",
     minPlayers: 1,
     equipment: [n("pucks", 20), n("goals", 1)]
@@ -500,7 +500,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 10,
     ageMax: 20,
-    minutes: 8,
+    minutes: 10,
     iceArea: "half",
     minPlayers: 4,
     equipment: [n("pucks", 30), n("goals", 1)]
@@ -540,7 +540,7 @@ const seed: SeedDrill[] = [
     kind: "game",
     ageMin: 5,
     ageMax: 10,
-    minutes: 12,
+    minutes: 15,
     iceArea: "full",
     minPlayers: 6,
     equipment: [n("smallNets", 4), n("pinnies", 8), n("pucks", 10)]
@@ -574,7 +574,7 @@ const seed: SeedDrill[] = [
     kind: "game",
     ageMin: 10,
     ageMax: 20,
-    minutes: 8,
+    minutes: 10,
     iceArea: "third",
     minPlayers: 5,
     equipment: [n("pinnies", 4), n("pucks", 10), n("cones", 4)]
@@ -608,7 +608,7 @@ const seed: SeedDrill[] = [
     kind: "game",
     ageMin: 10,
     ageMax: 20,
-    minutes: 8,
+    minutes: 10,
     iceArea: "half",
     minPlayers: 2,
     equipment: [n("pucks", 20), n("goals", 1)]
@@ -623,7 +623,7 @@ const seed: SeedDrill[] = [
     kind: "game",
     ageMin: 5,
     ageMax: 12,
-    minutes: 6,
+    minutes: 5,
     iceArea: "half",
     minPlayers: 6,
     equipment: [n("pucks", 4), n("cones", 4)]
@@ -638,7 +638,7 @@ const seed: SeedDrill[] = [
     kind: "game",
     ageMin: 5,
     ageMax: 10,
-    minutes: 6,
+    minutes: 5,
     iceArea: "third",
     minPlayers: 8,
     equipment: [n("pucks", 20), n("tires", 4)]
@@ -659,7 +659,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 11,
     ageMax: 20,
-    minutes: 8,
+    minutes: 10,
     iceArea: "half",
     minPlayers: 2,
     equipment: [n("pucks", 20), n("goals", 1)]
@@ -678,7 +678,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 9,
     ageMax: 20,
-    minutes: 6,
+    minutes: 5,
     iceArea: "station",
     minPlayers: 2,
     equipment: [perPair("pucks"), n("cones", 4)]
@@ -699,7 +699,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 7,
     ageMax: 20,
-    minutes: 8,
+    minutes: 10,
     iceArea: "station",
     minPlayers: 1,
     equipment: [n("goals", 1)]
@@ -714,7 +714,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 9,
     ageMax: 20,
-    minutes: 6,
+    minutes: 5,
     iceArea: "station",
     minPlayers: 1,
     equipment: [n("pucks", 10), n("goals", 1)]
@@ -733,7 +733,7 @@ const seed: SeedDrill[] = [
     kind: "drill",
     ageMin: 9,
     ageMax: 20,
-    minutes: 6,
+    minutes: 5,
     iceArea: "station",
     minPlayers: 3,
     equipment: [n("pucks", 10), n("goals", 1)]

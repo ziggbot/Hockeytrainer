@@ -65,14 +65,13 @@ export function Home() {
 
         {pos && (
           <p className="sub" style={{ textAlign: "center", marginTop: 4 }}>
-            {S.skillIcons[pos.block.focus[0]]} {t.blockLine(pos.block.name, pos.weekIndex, pos.weekCount)}
+            {S.skillIcons[pos.block.focus[0]]} {pos.block.name}
           </p>
         )}
 
         <section className="section">
           <div className="section__head">
             <h2>{t.thisWeek}</h2>
-            <span className="section__note">{t.thisWeekNote}</span>
           </div>
           {slots.length === 0 ? (
             <p className="sub" style={{ marginTop: 14 }}>
@@ -161,7 +160,6 @@ function NextUp({ team, slot, now, onGo, onOpen }: { team: Team; slot: Slot; now
         <h2 className="next__title">{plan.title}</h2>
         <div className="next__meta">
           {S.ui.common.drills(count)} · {S.ui.common.minutes(slot.minutes)}
-          {!slot.session && ` · ${t.suggestion.toLowerCase()}`}
         </div>
         <button type="button" className="link" onClick={onOpen}>
           {t.showPlan}

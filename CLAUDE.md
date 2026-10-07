@@ -17,7 +17,14 @@ Simple and clear beats feature-rich. Keep to these patterns:
 - Lists: `.row` = grayscale emoji icon · Caveat day/time label · title + gray sub-line · hand-drawn checkbox. Rows are separated by dashed lines.
 - Emoji are monochrome (`filter: grayscale(1)`) except the active nav item.
 - Tap targets ≥ 44px; in rink mode ≥ 64px (gloves).
+- Minimal text: no explanatory hints, section notes or disclaimers unless the screen can't be used without them. The club asked for this explicitly.
 - Check every UI change at 320, 360 and 390 px wide: no horizontal overflow.
+
+## Club's session shape (from the club, keep it)
+
+- Every suggested practice: warm-up → (whole-group focus drill on longer ice) → **4 different stations** + **free zone in the middle** (neutral zone, for players who can't join the rotation) → game. Built by `allocate`/`assemble` in `web/src/domain/planner.ts`; templates in `web/src/content/templates.ts` use the same shape.
+- Every segment is a whole number of **5-minute blocks** (5, 10, 15, 20). Steppers move in 5s; seed drill lengths are multiples of 5.
+- Changing the planner's output shape: bump `PLAN_VERSION` so untouched upcoming plans are rebuilt on start.
 
 ## Non-negotiables
 

@@ -9,7 +9,7 @@ import type {
   Team,
   TrainingTime
 } from "../domain/types";
-import { drillIdsOf, suggestPlan } from "../domain/planner";
+import { PLAN_VERSION, drillIdsOf, roundToStep, suggestPlan } from "../domain/planner";
 import { currentBlock } from "../domain/curriculum";
 import { parseISODate } from "../domain/dates";
 import { AGE_GROUPS } from "../content/curricula";
@@ -137,6 +137,7 @@ export function planSession(team: Team, date: string, start: string, minutes: nu
     equipmentChecked: [],
     templateId: suggestion.templateId,
     variant: suggestion.variant,
+    planVersion: PLAN_VERSION,
     createdAt: now,
     updatedAt: now
   };
@@ -157,8 +158,46 @@ export function replanSession(id: string) {
     parts: withIds(suggestion.parts),
     templateId: suggestion.templateId,
     variant: suggestion.variant,
+    planVersion: PLAN_VERSION,
     equipmentChecked: []
   });
+}
+
+/**
+ * After a planner change, rebuild upcoming plans the coach never touched so
+ * they follow the new shape. Anything edited, done or in the past is kept.
+ */
+export function refreshUntouchedPlans(today: string) {
+  const s = getState();
+  const stale = s.sessions.filter(
+    (x) =>
+      (x.planVersion ?? 1) < PLAN_VERSION &&
+      x.status === "planned" &&
+      x.date >= today &&
+      x.updatedAt === x.createdAt &&
+      x.equipmentChecked.length === 0
+  );
+  for (const x of stale) {
+    const team = s.teams.find((t) => t.id === x.teamId);
+    if (!team) continue;
+    const suggestion = suggestionFor(team, x.date, x.minutes, 0, x.id);
+    setState((st) => ({
+      ...st,
+      sessions: st.sessions.map((y) =>
+        y.id === x.id
+          ? {
+              ...y,
+              title: suggestion.title,
+              focus: suggestion.focus,
+              parts: withIds(suggestion.parts),
+              templateId: suggestion.templateId,
+              variant: suggestion.variant,
+              planVersion: PLAN_VERSION
+            }
+          : y
+      )
+    }));
+  }
 }
 
 export function updateSession(id: string, patch: Partial<Omit<Session, "id" | "teamId" | "createdAt">>) {
@@ -194,7 +233,7 @@ export function deleteSession(id: string) {
 }
 
 export function newPart(drill: Drill): SessionPart {
-  return { id: newId(), type: "drill", drillId: drill.id, minutes: drill.minutes };
+  return { id: newId(), type: "drill", drillId: drill.id, minutes: roundToStep(drill.minutes) };
 }
 
 // ── Notes (append-only) ────────────────────────────────────────

@@ -119,7 +119,6 @@ export function Onboarding({ onDone, showBack = false }: { onDone?: () => void; 
           })}
         </ul>
       )}
-      {times.length > 1 && <span className="field__hint">{t.daysHint}</span>}
 
       <div className="field">
         <span className="field__label">{S.ui.team.players}</span>
@@ -132,7 +131,6 @@ export function Onboarding({ onDone, showBack = false }: { onDone?: () => void; 
       <button type="button" className="cta" onClick={submit}>
         {t.go}
       </button>
-      <p className="footer-note">{S.ui.home.footer}</p>
     </main>
   );
 }

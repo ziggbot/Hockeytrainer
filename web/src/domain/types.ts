@@ -96,6 +96,11 @@ export type SessionPart =
       /** Time at each station; every group visits every station. */
       minutesPerStation: number;
       drillIds: string[];
+      /**
+       * Open area in the neutral zone for players who can't join the rotation
+       * this time. They stay there; it is not part of the rotation.
+       */
+      freeZone?: boolean;
     };
 
 export interface Session {
@@ -117,6 +122,8 @@ export interface Session {
   templateId?: string;
   /** Which planner alternative this is; "Nytt förslag" increments it. */
   variant?: number;
+  /** Planner generation that built this plan; older untouched plans are rebuilt. */
+  planVersion?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -139,10 +146,19 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K>
 /** A session part before it gets an id (templates, planner output). */
 export type PartDraft = DistributiveOmit<SessionPart, "id">;
 
+/**
+ * Curated session (spec §4 SessionTemplate) in the club's standard shape:
+ * warm-up → whole-group focus drills → 4-station rotation → game. Minutes
+ * come from the slot length (planner `allocate`), not from the template.
+ */
 export interface SessionTemplate {
   id: string;
   title: string;
   ageGroupIds: string[];
   focus: Skill[];
-  parts: PartDraft[];
+  warmup: string;
+  /** Used in order when the slot is long enough for whole-group drills. */
+  extras: string[];
+  stations: string[];
+  game: string;
 }

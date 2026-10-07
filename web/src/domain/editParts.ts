@@ -56,4 +56,8 @@ export function removeStation(parts: SessionPart[], partId: string, station: num
   });
 }
 
+export function toggleFreeZone(parts: SessionPart[], partId: string): SessionPart[] {
+  return parts.map((p) => (p.id === partId && p.type === "stations" ? { ...p, freeZone: !p.freeZone } : p));
+}
+
 export const stationLetter = (i: number) => String.fromCharCode(65 + i);

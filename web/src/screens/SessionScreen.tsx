@@ -6,9 +6,9 @@ import { Check } from "../components/Check";
 import { ConfirmButton } from "../components/ConfirmButton";
 import { DrillPicker } from "../components/DrillPicker";
 import { Stepper } from "../components/Stepper";
-import { currentBlock } from "../domain/curriculum";
 import { parseISODate, timeToMinutes, minutesToTime } from "../domain/dates";
 import {
+  toggleFreeZone,
   addStation,
   movePart,
   removePart,
@@ -19,7 +19,7 @@ import {
   MAX_STATIONS
 } from "../domain/editParts";
 import { equipmentFor } from "../domain/equipment";
-import { MIN_PART_MINUTES, partMinutes, totalMinutes } from "../domain/planner";
+import { MIN_PART_MINUTES, STEP, partMinutes, totalMinutes } from "../domain/planner";
 import { encodeShare } from "../domain/share";
 import { NOTE_TAGS, type Drill, type NoteTag, type Session, type SessionPart } from "../domain/types";
 import { S, formatDayShort, relativeDay, formatTime } from "../i18n";
@@ -27,7 +27,6 @@ import {
   addNote,
   ageGroupOf,
   allDrills,
-  curriculumOf,
   deleteSession,
   newPart,
   replanSession,
@@ -65,7 +64,6 @@ export function SessionScreen() {
   }
 
   const ageGroup = ageGroupOf(team);
-  const pos = currentBlock(curriculumOf(team, state), parseISODate(session.date));
   const total = totalMinutes(session.parts);
   const diff = total - session.minutes;
   const equipment = equipmentFor(session.parts, byId, team.playerCount);
@@ -115,12 +113,6 @@ export function SessionScreen() {
           {relativeDay(session.date, new Date())} {formatDayShort(date)} · {formatTime(session.start)} ·{" "}
           {S.ui.common.minutes(session.minutes)}
         </p>
-        {pos && (
-          <p className="sub">
-            {S.skillIcons[pos.block.focus[0]]} {pos.block.name}
-          </p>
-        )}
-
         {session.status === "done" ? (
           <div className="notice">{t.done}</div>
         ) : (
@@ -158,9 +150,6 @@ export function SessionScreen() {
                           {startsAt} · {t.stations(part.drillIds.length, part.minutesPerStation)}
                         </span>
                       </div>
-                      <div className="sub" style={{ fontSize: 15 }}>
-                        {t.stationsHint}
-                      </div>
                       <ul className="rows">
                         {part.drillIds.map((drillId, i) => (
                           <li key={`${drillId}-${i}`}>
@@ -189,10 +178,27 @@ export function SessionScreen() {
                           </li>
                         ))}
                       </ul>
-                      {editing && part.drillIds.length < MAX_STATIONS && (
-                        <button type="button" className="link" onClick={() => setPicker({ mode: "addStation", partId: part.id })}>
-                          + {t.addStation}
-                        </button>
+                      {part.freeZone && <FreeZoneRow />}
+                      {editing && (
+                        <div className="edit-bar">
+                          {part.drillIds.length < MAX_STATIONS && (
+                            <button
+                              type="button"
+                              className="link"
+                              onClick={() => setPicker({ mode: "addStation", partId: part.id })}
+                            >
+                              + {t.addStation}
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            className={`chip chip--sm${part.freeZone ? " chip--on" : ""}`}
+                            aria-pressed={!!part.freeZone}
+                            onClick={() => edit(toggleFreeZone(parts, part.id))}
+                          >
+                            {t.freeZone}
+                          </button>
+                        </div>
                       )}
                     </div>
                   )}
@@ -203,8 +209,9 @@ export function SessionScreen() {
                         onChange={(m) => edit(setPartMinutes(parts, part.id, m))}
                         min={MIN_PART_MINUTES}
                         max={60}
+                        step={STEP}
                         label={part.type === "drill" ? S.ui.common.min : t.perStation}
-                        format={(v) => (part.type === "drill" ? S.ui.common.minutes(v) : `${v} ${t.perStation}`)}
+                        format={S.ui.common.minutes}
                       />
                       <span className="edit-bar__actions">
                         <button
@@ -269,7 +276,6 @@ export function SessionScreen() {
         <section className="section">
           <div className="section__head">
             <h2>{t.equipment}</h2>
-            <span className="section__note">{t.equipmentNote}</span>
           </div>
           {equipment.length === 0 ? (
             <p className="sub" style={{ marginTop: 12 }}>
@@ -375,9 +381,7 @@ export function DrillRow({
       )}
       <span className="row__main">
         <div className="row__title">{drill ? drill.title : S.ui.common.unknownDrill}</div>
-        {drill && (
-          <div className="row__sub">{[sub, S.iceAreas[drill.iceArea], S.kinds[drill.kind]].filter(Boolean).join(" · ")}</div>
-        )}
+        {drill && sub && <div className="row__sub">{sub}</div>}
       </span>
       {letter ? (
         <span className="station-letter">{letter}</span>
@@ -398,13 +402,26 @@ export function DrillRow({
   );
 }
 
+/** The open area in the neutral zone during a rotation. */
+export function FreeZoneRow() {
+  return (
+    <div className="row row--compact">
+      <span className="row__icon">⭕</span>
+      <span className="row__main">
+        <div className="row__title">{t.freeZone}</div>
+      </span>
+      <span />
+    </div>
+  );
+}
+
 export function PlanTotal({ total, slot, diff }: { total: number; slot: number; diff: number }) {
   return (
     <div className={`plan-total${diff > 0 ? " plan-total--over" : ""}`}>
       <span className="hand" style={{ fontSize: 26 }}>
         {t.total(total, slot)}
       </span>
-      <span className={diff === 0 ? "muted" : ""}>{diff > 0 ? t.over(diff) : diff < 0 ? t.under(-diff) : t.exact}</span>
+      {diff !== 0 && <span>{diff > 0 ? t.over(diff) : t.under(-diff)}</span>}
     </div>
   );
 }
@@ -422,7 +439,6 @@ function NotesSection({
     <section className="section">
       <div className="section__head">
         <h2>{t.notes}</h2>
-        <span className="section__note">{t.notesNote}</span>
       </div>
       <NoteForm text={text} tags={tags} onText={setText} onTags={setTags} />
       <button
@@ -438,11 +454,7 @@ function NotesSection({
       >
         {t.addNote}
       </button>
-      {notes.length === 0 ? (
-        <p className="sub" style={{ marginTop: 12 }}>
-          {t.noNotes}
-        </p>
-      ) : (
+      {notes.length > 0 && (
         <ul className="rows">
           {notes.map((n) => (
             <li key={n.id} style={{ padding: "12px 0", borderBottom: "1.5px dashed var(--line)" }}>

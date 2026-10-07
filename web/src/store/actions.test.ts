@@ -54,3 +54,32 @@ describe("loading saved data", () => {
     expect(normalizeState("garbage").teams).toEqual([]);
   });
 });
+
+describe("planner upgrade", () => {
+  it("rebuilds untouched upcoming plans in the 4-station shape and keeps edited ones", async () => {
+    const { setState } = await import("./store");
+    const { refreshUntouchedPlans } = await import("./actions");
+    const team = createTeam({ name: "Upg", ageGroupId: "u10", playerCount: 14, schedule: [] });
+    const old = (id: string, edited: boolean) => ({
+      id,
+      teamId: team.id,
+      date: "2026-11-03",
+      start: "18:00",
+      minutes: 60,
+      title: "Gammalt",
+      focus: [],
+      parts: [{ id: `${id}-p`, type: "drill" as const, drillId: "w-kull", minutes: 7 }],
+      status: "planned" as const,
+      equipmentChecked: [],
+      createdAt: "2026-10-01T10:00:00Z",
+      updatedAt: edited ? "2026-10-02T10:00:00Z" : "2026-10-01T10:00:00Z"
+    });
+    setState((s) => ({ ...s, sessions: [...s.sessions, old("untouched", false), old("edited", true)] }));
+    refreshUntouchedPlans("2026-10-07");
+    const rebuilt = session("untouched");
+    expect(rebuilt.planVersion).toBe(2);
+    expect(rebuilt.parts.some((p) => p.type === "stations" && p.drillIds.length === 4 && p.freeZone)).toBe(true);
+    expect(totalMinutes(rebuilt.parts)).toBe(60);
+    expect(session("edited").parts).toHaveLength(1);
+  });
+});

@@ -17,7 +17,10 @@ const r = S.ui.rink;
 
 type Step =
   | { kind: "drill"; drillId: string; minutes: number }
-  | { kind: "rotation"; drillIds: string[]; minutes: number; rotation: number; rotations: number };
+  | { kind: "rotation"; drillIds: string[]; minutes: number; rotation: number; rotations: number; freeZone: boolean };
+
+/** `myStation` value for the coach who looks after the free zone. */
+const FREE_ZONE = -1;
 
 export function stepsOf(parts: (SessionPart | PartDraft)[]): Step[] {
   return parts.flatMap<Step>((p) =>
@@ -28,7 +31,8 @@ export function stepsOf(parts: (SessionPart | PartDraft)[]): Step[] {
           drillIds: p.drillIds,
           minutes: p.minutesPerStation,
           rotation,
-          rotations: p.drillIds.length
+          rotations: p.drillIds.length,
+          freeZone: !!p.freeZone
         }))
   );
 }
@@ -39,7 +43,7 @@ interface TimerState {
   endsAt: number | null;
   /** Remaining ms while paused. */
   remaining: number | null;
-  /** Station this coach runs (index), for the station view. */
+  /** Station this coach runs (index, or FREE_ZONE), for the station view. */
   myStation: number | null;
 }
 
@@ -269,7 +273,7 @@ export function RinkMode({ persistKey, parts, drillsById, onExit, onFinish }: Pr
         </button>
 
         {step.kind === "drill" && <DrillDetails drill={drillsById.get(step.drillId)} />}
-        {step.kind === "rotation" && timer.myStation !== null && (
+        {step.kind === "rotation" && timer.myStation !== null && timer.myStation >= 0 && (
           <DrillDetails drill={drillsById.get(step.drillIds[timer.myStation])} />
         )}
 
@@ -307,7 +311,7 @@ function stationsTitle(step: Extract<Step, { kind: "rotation" }>) {
 function DrillStep({ drill }: { drill: Drill | undefined }) {
   return (
     <>
-      <div className="rinkmode__kind">{drill ? `${S.kinds[drill.kind]} · ${S.iceAreas[drill.iceArea]}` : ""}</div>
+      <div className="rinkmode__kind">{drill ? S.kinds[drill.kind] : ""}</div>
       <h1 className="rinkmode__title">{drill?.title ?? S.ui.common.unknownDrill}</h1>
     </>
   );
@@ -343,6 +347,18 @@ function RotationStep({
   // so station s hosts group (s − k) mod n.
   const groupAt = (s: number) => ((((s - step.rotation) % n) + n) % n) + 1;
 
+  if (myStation === FREE_ZONE) {
+    return (
+      <>
+        <div className="rinkmode__kind">{r.rotation(step.rotation + 1, n)}</div>
+        <h1 className="rinkmode__title">{S.ui.session.freeZone}</h1>
+        <button type="button" className="link" onClick={() => onPick(null)}>
+          {r.allStations}
+        </button>
+      </>
+    );
+  }
+
   if (myStation !== null) {
     const drill = drillsById.get(step.drillIds[myStation]);
     return (
@@ -369,10 +385,12 @@ function RotationStep({
             <div className="station-card__title">{drillsById.get(id)?.title ?? S.ui.common.unknownDrill}</div>
           </button>
         ))}
+        {step.freeZone && (
+          <button type="button" className="station-card station-card--free" onClick={() => onPick(FREE_ZONE)}>
+            <div className="station-card__title">{S.ui.session.freeZone}</div>
+          </button>
+        )}
       </div>
-      <p className="sub" style={{ marginTop: 8 }}>
-        {r.myStation}
-      </p>
     </>
   );
 }

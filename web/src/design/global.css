@@ -104,6 +104,7 @@ a[role="link"] {
   font-size: 32px;
   text-decoration: none;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .logo svg {
@@ -443,6 +444,19 @@ a[role="link"] {
   min-height: 38px;
   padding: 2px 12px;
   font-size: 22px;
+}
+
+/* Long team names in the header shrink with "…" instead of widening the page. */
+.topbar .chip {
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.chip__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chip__icon {
@@ -946,6 +960,13 @@ textarea.input {
 .station-card--mine {
   background: var(--yellow-soft);
   border-width: 3px;
+}
+
+/* Free zone in the neutral zone: spans the grid, not part of the rotation. */
+.station-card--free {
+  grid-column: 1 / -1;
+  min-height: 56px;
+  border-style: dashed;
 }
 
 .station-card__title {

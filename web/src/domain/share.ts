@@ -71,7 +71,7 @@ function cleanPart(p: unknown): PartDraft | null {
       .slice(0, 8);
     const mps = num(o.minutesPerStation);
     return drillIds.length > 0 && mps !== null
-      ? { type: "stations", drillIds, minutesPerStation: Math.max(1, Math.min(60, mps)) }
+      ? { type: "stations", drillIds, minutesPerStation: Math.max(1, Math.min(60, mps)), freeZone: o.freeZone === true }
       : null;
   }
   return null;

@@ -50,8 +50,7 @@ export function DrillDetail() {
           ))}
         </div>
         <p className="sub" style={{ marginTop: 8 }}>
-          {S.kinds[drill.kind]} · {S.ui.common.minutes(drill.minutes)} · {S.ui.common.years(drill.ageMin, drill.ageMax)} ·{" "}
-          {S.ui.common.players(drill.minPlayers)}
+          {S.ui.common.minutes(drill.minutes)} · {S.ui.common.years(drill.ageMin, drill.ageMax)}
         </p>
 
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
@@ -104,9 +103,7 @@ export function DrillDetail() {
           </button>
         )}
 
-        {drill.source === "seed" ? (
-          <p className="footer-note">{t.review}</p>
-        ) : (
+        {drill.source === "own" && (
           <div style={{ display: "flex", gap: 20, marginTop: 24 }}>
             <AppLink to={`/ovningar/${drill.id}/andra`} className="link">
               {t.editOwn}

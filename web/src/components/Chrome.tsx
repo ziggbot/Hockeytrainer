@@ -19,7 +19,7 @@ export function TopBar() {
       {team && (
         <AppLink to="/lag" className="chip chip--sm" aria-label={S.ui.team.title}>
           <span className="chip__icon">🏒</span>
-          {team.name}
+          <span className="chip__text">{team.name}</span>
         </AppLink>
       )}
     </header>

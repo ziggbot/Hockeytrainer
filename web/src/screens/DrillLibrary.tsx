@@ -12,7 +12,7 @@ const t = S.ui.library;
 
 type Length = "short" | "medium" | "long";
 const LENGTHS: Length[] = ["short", "medium", "long"];
-const inLength = (m: number, l: Length | null) => !l || (l === "short" ? m <= 6 : l === "medium" ? m >= 7 && m <= 9 : m >= 10);
+const inLength = (m: number, l: Length | null) => !l || (l === "short" ? m <= 5 : l === "medium" ? m === 10 : m >= 15);
 
 /** Drill library (spec §5.3) with filters for age, skill, duration and ice area. Filters live in the URL. */
 export function DrillLibrary() {

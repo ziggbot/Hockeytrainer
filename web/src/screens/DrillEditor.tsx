@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { BackBar } from "../components/Chrome";
 import { Stepper } from "../components/Stepper";
 import { EQUIPMENT_ORDER } from "../domain/equipment";
+import { STEP, roundToStep } from "../domain/planner";
 import { ICE_AREAS, SKILLS, type Drill, type DrillKind, type EquipmentItem, type Skill } from "../domain/types";
 import { S } from "../i18n";
 import { activeTeam, ageGroupOf, saveOwnDrill } from "../store/actions";
@@ -38,7 +39,7 @@ export function DrillEditor() {
   const [kind, setKind] = useState<DrillKind>(existing?.kind ?? "drill");
   const [ageMin, setAgeMin] = useState(existing?.ageMin ?? ag?.ageMin ?? 8);
   const [ageMax, setAgeMax] = useState(existing?.ageMax ?? ag?.ageMax ?? 12);
-  const [minutes, setMinutes] = useState(existing?.minutes ?? 8);
+  const [minutes, setMinutes] = useState(roundToStep(existing?.minutes ?? 10));
   const [iceArea, setIceArea] = useState(existing?.iceArea ?? "half");
   const [minPlayers, setMinPlayers] = useState(existing?.minPlayers ?? 1);
   const [equipment, setEquipment] = useState<Partial<Record<EquipmentItem, number>>>(
@@ -169,7 +170,15 @@ export function DrillEditor() {
 
       <div className="field">
         <span className="field__label">{t.length}</span>
-        <Stepper value={minutes} onChange={setMinutes} min={2} max={60} label={t.length} format={S.ui.common.minutes} />
+        <Stepper
+          value={minutes}
+          onChange={setMinutes}
+          min={STEP}
+          max={60}
+          step={STEP}
+          label={t.length}
+          format={S.ui.common.minutes}
+        />
       </div>
 
       <div className="field">

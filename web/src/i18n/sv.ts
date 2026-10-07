@@ -138,6 +138,9 @@ export const sv = {
       under: (n: number) => `${n} min kvar`,
       stations: (n: number, m: number) => `Stationer · ${n} × ${m} min`,
       stationsTitle: "Stationer",
+      // Soft hyphen: the big rink title can break the compound at 320 px.
+      gather: "Samling och stations\u00ADuppdelning",
+      addGather: "Samling",
       freeZone: "Fri zon i mitten",
       perStation: "min per station",
       swap: "Byt",

@@ -10,13 +10,18 @@ export const MIN_PART_MINUTES = STEP;
 export const MIN_STATION_MINUTES = STEP;
 /** The club's standard rotation. */
 export const STATION_COUNT = 4;
+/** Every practice opens with these (club's base). */
+export const WARMUP_MINUTES = 5;
+export const GATHER_MINUTES = 5;
+/** One station of every rotation is a plain game against small goals; it is the last one. */
+export const MATCH_STATION_ID = "g-smallgoals";
 /** Bumped when the planner's output shape changes; see store `refreshUntouchedPlans`. */
-export const PLAN_VERSION = 2;
+export const PLAN_VERSION = 3;
 
 export const roundToStep = (m: number) => Math.max(STEP, Math.round(m / STEP) * STEP);
 
 export function partMinutes(p: PartDraft | SessionPart): number {
-  return p.type === "drill" ? p.minutes : p.minutesPerStation * p.drillIds.length;
+  return p.type === "stations" ? p.minutesPerStation * p.drillIds.length : p.minutes;
 }
 
 export function totalMinutes(parts: (PartDraft | SessionPart)[]): number {
@@ -24,35 +29,36 @@ export function totalMinutes(parts: (PartDraft | SessionPart)[]): number {
 }
 
 export function drillIdsOf(parts: (PartDraft | SessionPart)[]): string[] {
-  return parts.flatMap((p) => (p.type === "drill" ? [p.drillId] : p.drillIds));
+  return parts.flatMap((p) => (p.type === "drill" ? [p.drillId] : p.type === "stations" ? p.drillIds : []));
 }
 
 export interface Allocation {
   warmup: number;
-  /** Whole-group focus drills before the rotation, 10–20 min each. */
-  extras: number[];
+  /** Gathering and splitting into station groups; 0 when there is no rotation. */
+  gather: number;
   /** 0 when the slot is too short for a rotation. */
   perStation: number;
+  /** Whole-group focus drills after the rotation, 10–20 min each. */
+  extras: number[];
   /** 0 when there is no time left for a game. */
   game: number;
 }
 
 /**
- * Split an ice slot into the standard shape, all in 5-minute steps:
- * warm-up 5–10, rotation of 4 × 5 (or 4 × 10 from 60 min), game up to 20,
- * and whole-group drills of 10–20 min for whatever is left.
+ * Split an ice slot into the club's base, all in 5-minute steps: warm-up 5,
+ * gathering 5, rotation of 4 × 5 (or 4 × 10 from 60 min), then a game up to
+ * 20 and whole-group drills of 10–20 min for whatever is left.
  */
 export function allocate(total: number, stations = STATION_COUNT): Allocation {
   const t = Math.floor(total / STEP) * STEP;
-  if (t < STEP * (stations + 1)) {
+  if (t < WARMUP_MINUTES + GATHER_MINUTES + STEP * stations) {
     // Too short for a rotation: warm-up and a game.
-    return { warmup: Math.min(t, STEP), extras: [], perStation: 0, game: Math.max(0, t - STEP) };
+    return { warmup: Math.min(t, WARMUP_MINUTES), gather: 0, perStation: 0, extras: [], game: Math.max(0, t - WARMUP_MINUTES) };
   }
   const perStation = t >= 60 ? 2 * STEP : STEP;
-  const rest = t - perStation * stations;
-  const warmup = rest >= 25 ? 10 : 5;
-  let left = rest - warmup;
-  if (left <= 20) return { warmup, extras: [], perStation, game: left };
+  let left = t - WARMUP_MINUTES - GATHER_MINUTES - perStation * stations;
+  const base = { warmup: WARMUP_MINUTES, gather: GATHER_MINUTES, perStation };
+  if (left <= 20) return { ...base, extras: [], game: left };
   let game = 15;
   left -= game;
   if (left < 10) {
@@ -66,27 +72,30 @@ export function allocate(total: number, stations = STATION_COUNT): Allocation {
     extras.push(chunk);
     left -= chunk;
   }
-  return { warmup, extras, perStation, game };
+  return { ...base, extras, game };
 }
 
 /** Which drills fill each slot of the standard shape. */
 export interface Blueprint {
   warmup?: string;
-  extras: string[];
+  /** All stations of the rotation, match station included. */
   stations: string[];
+  extras: string[];
   game?: string;
 }
 
+/** warm-up → gathering → stations (+ free zone) → whole-group drills → game */
 export function assemble(bp: Blueprint, minutes: number): PartDraft[] {
   const a = allocate(minutes, bp.stations.length || STATION_COUNT);
   const parts: PartDraft[] = [];
   if (bp.warmup && a.warmup > 0) parts.push({ type: "drill", drillId: bp.warmup, minutes: a.warmup });
+  if (a.perStation > 0 && bp.stations.length >= 2) {
+    parts.push({ type: "gather", minutes: a.gather });
+    parts.push({ type: "stations", drillIds: bp.stations, minutesPerStation: a.perStation, freeZone: true });
+  }
   a.extras.forEach((m, i) => {
     if (bp.extras[i]) parts.push({ type: "drill", drillId: bp.extras[i], minutes: m });
   });
-  if (a.perStation > 0 && bp.stations.length >= 2) {
-    parts.push({ type: "stations", drillIds: bp.stations, minutesPerStation: a.perStation, freeZone: true });
-  }
   if (bp.game && a.game > 0) parts.push({ type: "drill", drillId: bp.game, minutes: a.game });
   return parts;
 }
@@ -116,6 +125,9 @@ export interface PlanSuggestion {
 const overlap = (a: Skill[], b: Skill[]) => a.filter((s) => b.includes(s)).length;
 
 export const templateDrillIds = (t: SessionTemplate) => [t.warmup, ...t.extras, ...t.stations, t.game];
+
+/** The small-goal match for the last station, if the library has it. */
+const matchStation = (drills: Drill[]) => (drills.some((d) => d.id === MATCH_STATION_ID) ? MATCH_STATION_ID : undefined);
 
 /** Templates usable for this team, best match first. */
 export function matchingTemplates(ctx: Pick<PlanContext, "ageGroup" | "focus" | "templates" | "drills">): SessionTemplate[] {
@@ -218,10 +230,14 @@ export function suggestPlan(ctx: PlanContext): PlanSuggestion {
   const templates = matchingTemplates(ctx);
   if (ctx.variant < templates.length) {
     const t = templates[ctx.variant];
+    const c = candidates(ctx, 0);
+    const match = matchStation(ctx.drills);
+    const used = new Set([...templateDrillIds(t), ...(match ? [match] : [])]);
+    // Without the match drill, a library station takes its place.
+    const stations = [...t.stations, ...(match ? [match] : takeDistinct(c.stations, 1, used))];
     // Long slots may need more whole-group drills than the template lists.
-    const used = new Set(templateDrillIds(t));
-    const fill = takeDistinct(candidates(ctx, 0).extras, 3, used);
-    const bp: Blueprint = { warmup: t.warmup, extras: [...t.extras, ...fill], stations: t.stations, game: t.game };
+    const fill = takeDistinct(c.extras, 3, used);
+    const bp: Blueprint = { warmup: t.warmup, stations, extras: [...t.extras, ...fill], game: t.game };
     return { title: t.title, focus: t.focus, parts: assemble(bp, ctx.minutes), templateId: t.id };
   }
   return generatePlan(ctx, ctx.variant - templates.length);
@@ -233,12 +249,14 @@ export function suggestPlan(ctx: PlanContext): PlanSuggestion {
  */
 export function generatePlan(ctx: PlanContext, seed: number): PlanSuggestion {
   const c = candidates(ctx, seed);
-  const used = new Set<string>();
+  const match = matchStation(ctx.drills);
+  const used = new Set<string>(match ? [match] : []);
   const warmup = firstNotIn(c.warmups, used);
   if (warmup) used.add(warmup);
-  const stations = takeDistinct(c.stations, STATION_COUNT, used);
+  const skill = takeDistinct(c.stations, match ? STATION_COUNT - 1 : STATION_COUNT, used);
+  const stations = match ? [...skill, match] : skill;
   const game = firstNotIn(c.games, used);
   if (game) used.add(game);
   const extras = takeDistinct(c.extras, 3, used);
-  return { focus: c.focus, parts: assemble({ warmup, extras, stations, game }, ctx.minutes) };
+  return { focus: c.focus, parts: assemble({ warmup, stations, extras, game }, ctx.minutes) };
 }

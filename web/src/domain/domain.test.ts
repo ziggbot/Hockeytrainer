@@ -1,17 +1,27 @@
 import { describe, expect, it } from "vitest";
 import { isoWeek, isoWeeksInYear, parseISODate } from "./dates";
 import { currentBlock } from "./curriculum";
-import { allocate, drillIdsOf, generatePlan, matchingTemplates, suggestPlan, templateDrillIds, totalMinutes } from "./planner";
+import {
+  MATCH_STATION_ID,
+  allocate,
+  drillIdsOf,
+  generatePlan,
+  matchingTemplates,
+  suggestPlan,
+  templateDrillIds,
+  totalMinutes
+} from "./planner";
 import { equipmentFor } from "./equipment";
+import { insertGather, setPartMinutes } from "./editParts";
 import { decodeShare, encodeShare } from "./share";
 import { nextSlot, upcomingSlots } from "./schedule";
 import { AGE_GROUPS, SEED_CURRICULA } from "../content/curricula";
 import { SEED_DRILLS } from "../content/drills";
 import { SEED_TEMPLATES } from "../content/templates";
-import type { Drill, PartDraft, Session, Team } from "./types";
+import type { Drill, PartDraft, Session, SessionPart, Team } from "./types";
 
 const isStep = (m: number) => m > 0 && m % 5 === 0;
-const minutesOf = (parts: PartDraft[]) => parts.flatMap((p) => (p.type === "drill" ? [p.minutes] : [p.minutesPerStation]));
+const minutesOf = (parts: PartDraft[]) => parts.map((p) => (p.type === "stations" ? p.minutesPerStation : p.minutes));
 
 const drillsById = new Map(SEED_DRILLS.map((d) => [d.id, d]));
 const ag = (id: string) => AGE_GROUPS.find((a) => a.id === id)!;
@@ -66,11 +76,19 @@ describe("seed content", () => {
     }
   });
 
-  it("templates have 4 different stations that fit half an end zone", () => {
+  it("templates have 3 different skill stations that fit half an end zone", () => {
     for (const t of SEED_TEMPLATES) {
-      expect(new Set(t.stations).size, t.id).toBe(4);
+      expect(new Set(t.stations).size, t.id).toBe(3);
+      expect(t.stations, t.id).not.toContain(MATCH_STATION_ID);
       for (const id of t.stations) expect(["station", "third"], `${t.id} → ${id}`).toContain(drillsById.get(id)!.iceArea);
     }
+  });
+
+  it("has the small-goal match drill for every age group", () => {
+    const match = drillsById.get(MATCH_STATION_ID)!;
+    expect(match).toMatchObject({ kind: "game", iceArea: "station" });
+    expect(match.equipment.some((e) => e.item === "smallNets")).toBe(true);
+    for (const a of AGE_GROUPS) expect(match.ageMin <= a.ageMin && match.ageMax >= a.ageMax, a.id).toBe(true);
   });
 
   it("seed drill lengths are whole 5-minute blocks", () => {
@@ -89,23 +107,26 @@ describe("seed content", () => {
 describe("planner", () => {
   it.each([25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 120])("splits %i min into 5-minute segments", (t) => {
     const a = allocate(t);
-    const sum = a.warmup + a.extras.reduce((x, y) => x + y, 0) + a.perStation * 4 + a.game;
+    const sum = a.warmup + a.gather + a.perStation * 4 + a.extras.reduce((x, y) => x + y, 0) + a.game;
     expect(sum).toBe(t);
-    for (const m of [a.warmup, a.perStation, ...a.extras]) expect(isStep(m)).toBe(true);
+    for (const m of [a.warmup, ...a.extras]) expect(isStep(m)).toBe(true);
+    expect(a.perStation % 5).toBe(0);
     expect(a.game % 5).toBe(0);
     expect(a.game).toBeLessThanOrEqual(20);
-    expect(a.warmup).toBeLessThanOrEqual(10);
+    expect(a.warmup).toBe(5);
+    expect(a.gather).toBe(a.perStation > 0 ? 5 : 0);
     for (const m of a.extras) expect(m >= 10 && m <= 20).toBe(true);
   });
 
-  it("uses 4 × 5 min stations below an hour and 4 × 10 from an hour", () => {
-    expect(allocate(45)).toEqual({ warmup: 10, extras: [], perStation: 5, game: 15 });
-    expect(allocate(60)).toEqual({ warmup: 5, extras: [], perStation: 10, game: 15 });
-    expect(allocate(90)).toEqual({ warmup: 10, extras: [15, 10], perStation: 10, game: 15 });
+  it("opens with 5 min warm-up and 5 min gathering, then 4 × 5 below an hour and 4 × 10 from an hour", () => {
+    expect(allocate(30)).toEqual({ warmup: 5, gather: 5, perStation: 5, extras: [], game: 0 });
+    expect(allocate(45)).toEqual({ warmup: 5, gather: 5, perStation: 5, extras: [], game: 15 });
+    expect(allocate(60)).toEqual({ warmup: 5, gather: 5, perStation: 10, extras: [], game: 10 });
+    expect(allocate(90)).toEqual({ warmup: 5, gather: 5, perStation: 10, extras: [15, 10], game: 15 });
   });
 
   it("skips the rotation when the ice time is too short", () => {
-    expect(allocate(20)).toEqual({ warmup: 5, extras: [], perStation: 0, game: 15 });
+    expect(allocate(25)).toEqual({ warmup: 5, gather: 0, perStation: 0, extras: [], game: 20 });
   });
 
   it("prefers a template matching the block focus", () => {
@@ -121,8 +142,9 @@ describe("planner", () => {
     });
     expect(s.templateId).toBe("t-u10-passshoot");
     expect(totalMinutes(s.parts)).toBe(50);
+    expect(s.parts.map((p) => p.type)).toEqual(["drill", "gather", "stations", "drill"]);
     const stations = s.parts.find((p) => p.type === "stations");
-    expect(stations).toMatchObject({ drillIds: ["pa-triangle", "pa-gates", "sh-rebounds", "sh-backhand"], freeZone: true });
+    expect(stations).toMatchObject({ drillIds: ["pa-triangle", "pa-gates", "sh-rebounds", MATCH_STATION_ID], freeZone: true });
   });
 
   it("falls back to a generated plan after the templates run out", () => {
@@ -141,7 +163,7 @@ describe("planner", () => {
     expect(totalMinutes(s.parts)).toBe(45);
   });
 
-  it.each(AGE_GROUPS.map((a) => a.id))("generates warm-up, 4 stations + free zone and a game for %s", (id) => {
+  it.each(AGE_GROUPS.map((a) => a.id))("generates the base, 4 stations + free zone and a game for %s", (id) => {
     for (const block of cur(id).blocks) {
       for (const minutes of [45, 60, 90]) {
         const plan = generatePlan(
@@ -159,9 +181,12 @@ describe("planner", () => {
         );
         expect(totalMinutes(plan.parts)).toBe(minutes);
         for (const m of minutesOf(plan.parts)) expect(isStep(m)).toBe(true);
-        const stations = plan.parts.find((p) => p.type === "stations");
+        expect(plan.parts[0]).toMatchObject({ type: "drill", minutes: 5 });
+        expect(plan.parts[1]).toEqual({ type: "gather", minutes: 5 });
+        const stations = plan.parts[2];
         expect(stations?.type === "stations" && stations.drillIds.length, `${id} ${block.name}`).toBe(4);
         expect(stations).toMatchObject({ freeZone: true });
+        expect(stations?.type === "stations" && stations.drillIds[3]).toBe(MATCH_STATION_ID);
         const ids = drillIdsOf(plan.parts);
         expect(new Set(ids).size).toBe(ids.length);
         expect(drillsById.get(ids[0])!.kind).toBe("warmup");
@@ -172,6 +197,30 @@ describe("planner", () => {
           expect(drill.ageMin <= group.ageMax + 2 && drill.ageMax >= group.ageMin - 2, `${d} for ${id}`).toBe(true);
         }
       }
+    }
+  });
+
+  it.each(AGE_GROUPS.map((a) => a.id))("every suggestion for %s starts with the club's base", (id) => {
+    const ctx = {
+      ageGroup: ag(id),
+      playerCount: 14,
+      focus: cur(id).blocks[0].focus,
+      targetSkills: cur(id).targetSkills,
+      minutes: 60,
+      drills: SEED_DRILLS,
+      templates: SEED_TEMPLATES
+    };
+    const count = matchingTemplates(ctx).length + 3;
+    for (let variant = 0; variant < count; variant++) {
+      const parts = suggestPlan({ ...ctx, variant }).parts;
+      expect(parts.slice(0, 2), `${id} v${variant}`).toMatchObject([
+        { type: "drill", minutes: 5 },
+        { type: "gather", minutes: 5 }
+      ]);
+      const stations = parts[2];
+      expect(stations.type === "stations" && stations.drillIds, `${id} v${variant}`).toHaveLength(4);
+      expect(stations.type === "stations" && stations.drillIds.indexOf(MATCH_STATION_ID)).toBe(3);
+      expect(totalMinutes(parts)).toBe(60);
     }
   });
 
@@ -192,11 +241,31 @@ describe("planner", () => {
   });
 });
 
+describe("editing the plan", () => {
+  const parts: SessionPart[] = [
+    { id: "w", type: "drill", drillId: "w-kull", minutes: 5 },
+    { id: "s", type: "stations", minutesPerStation: 10, drillIds: ["s-edges", "p-slalom"] }
+  ];
+
+  it("puts a gathering back right before the rotation", () => {
+    const g: SessionPart = { id: "g", type: "gather", minutes: 5 };
+    expect(insertGather(parts, g).map((p) => p.id)).toEqual(["w", "g", "s"]);
+    expect(insertGather([parts[0]], g).map((p) => p.id)).toEqual(["w", "g"]);
+  });
+
+  it("steps a gathering's minutes like a drill's", () => {
+    const g: SessionPart = { id: "g", type: "gather", minutes: 5 };
+    expect(setPartMinutes([g], "g", 10)).toEqual([{ id: "g", type: "gather", minutes: 10 }]);
+    expect(setPartMinutes([g], "g", 0)).toEqual([{ id: "g", type: "gather", minutes: 5 }]);
+  });
+});
+
 describe("equipment", () => {
   it("takes the max across sequential parts and sums stations", () => {
     const lines = equipmentFor(
       [
         { id: "1", type: "drill", drillId: "w-follow", minutes: 6 }, // pucks: 1 per player
+        { id: "g", type: "gather", minutes: 5 },
         { id: "2", type: "stations", minutesPerStation: 7, drillIds: ["s-edges", "p-slalom"] }, // cones 8 + 8
         { id: "3", type: "drill", drillId: "g-3v3", minutes: 10 } // pinnies 6, nets 2, pucks 10
       ],
@@ -232,7 +301,8 @@ describe("share link", () => {
       focus: ["passing"],
       parts: [
         { id: "a", type: "drill", drillId: "w-kull", minutes: 5 },
-        { id: "b", type: "drill", drillId: own.id, minutes: 40 }
+        { id: "g", type: "gather", minutes: 5 },
+        { id: "b", type: "drill", drillId: own.id, minutes: 35 }
       ],
       status: "planned",
       equipmentChecked: [],
@@ -244,7 +314,8 @@ describe("share link", () => {
     expect(decoded?.team).toBe("U10 Blå");
     expect(decoded?.parts).toEqual([
       { type: "drill", drillId: "w-kull", minutes: 5 },
-      { type: "drill", drillId: "own-1", minutes: 40 }
+      { type: "gather", minutes: 5 },
+      { type: "drill", drillId: "own-1", minutes: 35 }
     ]);
     expect(decoded?.drills.map((d) => d.id)).toEqual(["own-1"]);
     expect(decoded?.drills[0].diagram).toBeUndefined();
@@ -259,7 +330,13 @@ describe("share link", () => {
     const evil = {
       v: 1,
       title: { toString: "x" },
-      parts: [{ type: "drill", drillId: "w-kull", minutes: 5 }, { type: "html", body: "<script>" }, null],
+      parts: [
+        { type: "drill", drillId: "w-kull", minutes: 5 },
+        { type: "html", body: "<script>" },
+        { type: "gather", minutes: "5" },
+        { type: "gather", minutes: 900, extra: "<b>" },
+        null
+      ],
       drills: [
         { id: "own-x", title: "X", diagram: "javascript:alert(1)", skills: ["hacking"], coachingPoints: "nope", source: "seed" }
       ]
@@ -271,7 +348,10 @@ describe("share link", () => {
       .replace(/=+$/, "");
     const decoded = decodeShare(b64)!;
     expect(decoded.title).toBe("");
-    expect(decoded.parts).toEqual([{ type: "drill", drillId: "w-kull", minutes: 5 }]);
+    expect(decoded.parts).toEqual([
+      { type: "drill", drillId: "w-kull", minutes: 5 },
+      { type: "gather", minutes: 60 }
+    ]);
     expect(decoded.drills[0]).toMatchObject({ id: "own-x", skills: ["gameSense"], coachingPoints: [], source: "own" });
     expect("diagram" in decoded.drills[0]).toBe(false);
   });

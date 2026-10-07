@@ -23,7 +23,7 @@ Simple, clear and usable rink-side beats feature-rich. Keep to these patterns:
 
 ## Club's session shape (from the club, keep it)
 
-- Every suggested practice: warm-up → (whole-group focus drill on longer ice) → **4 different stations** + **free zone in the middle** (neutral zone, for players who can't join the rotation) → game. Built by `allocate`/`assemble` in `web/src/domain/planner.ts`; templates in `web/src/content/templates.ts` use the same shape.
+- The base of every suggested practice: **5 min warm-up** → **5 min gathering and station split** (part type `gather`) → **4 different stations** where the last one (D) is always **a match against small goals** (`g-smallgoals`) + **free zone in the middle** (neutral zone, for players who can't join the rotation). Then, with time left: whole-group focus drill on longer ice → game. Built by `allocate`/`assemble` in `web/src/domain/planner.ts`; templates in `web/src/content/templates.ts` list the 3 skill stations and the planner adds the match.
 - Every segment is a whole number of **5-minute blocks** (5, 10, 15, 20). Steppers move in 5s; seed drill lengths are multiples of 5.
 - Changing the planner's output shape: bump `PLAN_VERSION` so untouched upcoming plans are rebuilt on start.
 

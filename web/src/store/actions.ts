@@ -9,7 +9,7 @@ import type {
   Team,
   TrainingTime
 } from "../domain/types";
-import { PLAN_VERSION, drillIdsOf, roundToStep, suggestPlan } from "../domain/planner";
+import { GATHER_MINUTES, PLAN_VERSION, drillIdsOf, roundToStep, suggestPlan } from "../domain/planner";
 import { currentBlock } from "../domain/curriculum";
 import { parseISODate } from "../domain/dates";
 import { AGE_GROUPS } from "../content/curricula";
@@ -234,6 +234,10 @@ export function deleteSession(id: string) {
 
 export function newPart(drill: Drill): SessionPart {
   return { id: newId(), type: "drill", drillId: drill.id, minutes: roundToStep(drill.minutes) };
+}
+
+export function newGather(): SessionPart {
+  return { id: newId(), type: "gather", minutes: GATHER_MINUTES };
 }
 
 // ── Notes (append-only) ────────────────────────────────────────

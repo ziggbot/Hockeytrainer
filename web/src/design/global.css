@@ -1094,6 +1094,17 @@ textarea.input {
   margin-top: 10px;
 }
 
+/* Two columns leave ~60px per title on the smallest phones: stack instead. */
+@media (max-width: 374px) {
+  .station-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .station-card {
+    min-height: 0;
+  }
+}
+
 .station-card {
   min-width: 0;
   overflow-wrap: anywhere;

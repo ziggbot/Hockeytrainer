@@ -29,7 +29,7 @@ export function equipmentFor(parts: SessionPart[], drillsById: Map<string, Drill
   const total = new Map<EquipmentItem, number>();
   for (const part of parts) {
     const partNeeds = new Map<EquipmentItem, number>();
-    const ids = part.type === "drill" ? [part.drillId] : part.drillIds;
+    const ids = part.type === "drill" ? [part.drillId] : part.type === "stations" ? part.drillIds : [];
     // Stations: groups split the players, so per-player gear is shared
     // between stations — count it once for the whole team, not per station.
     const perStationPlayers = part.type === "stations" ? Math.ceil(playerCount / ids.length) : playerCount;

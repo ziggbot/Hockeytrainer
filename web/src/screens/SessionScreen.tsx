@@ -11,6 +11,7 @@ import { parseISODate, timeToMinutes, minutesToTime } from "../domain/dates";
 import {
   toggleFreeZone,
   addStation,
+  insertGather,
   movePart,
   removePart,
   removeStation,
@@ -29,6 +30,7 @@ import {
   ageGroupOf,
   allDrills,
   deleteSession,
+  newGather,
   newPart,
   replanSession,
   setDone,
@@ -144,6 +146,8 @@ export function SessionScreen() {
                 <li key={part.id}>
                   {part.type === "drill" ? (
                     <DrillRow drill={byId.get(part.drillId)} label={startsAt} sub={S.ui.common.minutes(part.minutes)} />
+                  ) : part.type === "gather" ? (
+                    <GatherRow label={startsAt} minutes={part.minutes} />
                   ) : (
                     <div className="stations">
                       <div className="stations__head">
@@ -206,12 +210,12 @@ export function SessionScreen() {
                   {editing && (
                     <div className="edit-bar" style={{ borderBottom: "1px solid var(--line)", paddingBottom: 10 }}>
                       <Stepper
-                        value={part.type === "drill" ? part.minutes : part.minutesPerStation}
+                        value={part.type === "stations" ? part.minutesPerStation : part.minutes}
                         onChange={(m) => edit(setPartMinutes(parts, part.id, m))}
                         min={MIN_PART_MINUTES}
                         max={60}
                         step={STEP}
-                        label={part.type === "drill" ? S.ui.common.min : t.perStation}
+                        label={part.type === "stations" ? t.perStation : S.ui.common.min}
                         format={S.ui.common.minutes}
                       />
                       <span className="edit-bar__actions">
@@ -265,6 +269,11 @@ export function SessionScreen() {
               <button type="button" className="btn" onClick={() => setPicker({ mode: "add" })}>
                 + {t.addDrill}
               </button>
+              {!parts.some((p) => p.type === "gather") && (
+                <button type="button" className="btn" onClick={() => edit(insertGather(parts, newGather()))}>
+                  + {t.addGather}
+                </button>
+              )}
               <ConfirmButton
                 label={`↻ ${t.newSuggestion}`}
                 confirmLabel={t.newSuggestionConfirm}
@@ -404,6 +413,27 @@ export function DrillRow({
     <div className={cls}>{body}</div>
   );
 }
+
+/** Everyone gathers before the rotation and is split into station groups. */
+export function GatherRow({ label, minutes }: { label?: string; minutes: number }) {
+  return (
+    <div className={`row${label === undefined ? " row--compact" : ""}`}>
+      <span className="row__icon">{GATHER_ICON}</span>
+      {label !== undefined && (
+        <span className="row__day" style={{ fontSize: 24 }}>
+          {label}
+        </span>
+      )}
+      <span className="row__main">
+        <div className="row__title">{t.gather}</div>
+        <div className="row__sub">{S.ui.common.minutes(minutes)}</div>
+      </span>
+      <span />
+    </div>
+  );
+}
+
+export const GATHER_ICON = "📣";
 
 /** The open area in the neutral zone during a rotation. */
 export function FreeZoneRow() {

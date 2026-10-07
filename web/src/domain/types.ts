@@ -90,6 +90,8 @@ export interface Team {
 
 export type SessionPart =
   | { id: string; type: "drill"; drillId: string; minutes: number }
+  /** Everyone gathers, hears the plan and is split into station groups. */
+  | { id: string; type: "gather"; minutes: number }
   | {
       id: string;
       type: "stations";
@@ -148,8 +150,9 @@ export type PartDraft = DistributiveOmit<SessionPart, "id">;
 
 /**
  * Curated session (spec §4 SessionTemplate) in the club's standard shape:
- * warm-up → whole-group focus drills → 4-station rotation → game. Minutes
- * come from the slot length (planner `allocate`), not from the template.
+ * warm-up → gathering → 4-station rotation → whole-group drills → game.
+ * Minutes come from the slot length (planner `allocate`), not from the
+ * template.
  */
 export interface SessionTemplate {
   id: string;
@@ -159,6 +162,7 @@ export interface SessionTemplate {
   warmup: string;
   /** Used in order when the slot is long enough for whole-group drills. */
   extras: string[];
+  /** The skill stations (3); the planner adds the small-goal match as the last one. */
   stations: string[];
   game: string;
 }

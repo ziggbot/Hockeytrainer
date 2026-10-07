@@ -64,6 +64,10 @@ function cleanPart(p: unknown): PartDraft | null {
     const minutes = num(o.minutes);
     return drillId && minutes !== null ? { type: "drill", drillId, minutes: Math.max(1, Math.min(180, minutes)) } : null;
   }
+  if (o.type === "gather") {
+    const minutes = num(o.minutes);
+    return minutes !== null ? { type: "gather", minutes: Math.max(1, Math.min(60, minutes)) } : null;
+  }
   if (o.type === "stations" && Array.isArray(o.drillIds)) {
     const drillIds = o.drillIds
       .map((id) => str(id, 100))

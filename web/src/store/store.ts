@@ -71,7 +71,7 @@ export function normalizeState(raw: unknown): AppState {
     activeTeamId: typeof raw.activeTeamId === "string" ? raw.activeTeamId : null,
     curricula: curricula.length > 0 ? curricula : base.curricula,
     ownDrills: list<Drill>(raw.ownDrills).filter((d) => isObj(d) && typeof d.id === "string" && Array.isArray(d.skills)),
-    ownTemplates: list<SessionTemplate>(raw.ownTemplates).filter((t) => isObj(t) && Array.isArray(t.parts)),
+    ownTemplates: list<SessionTemplate>(raw.ownTemplates).filter((t) => isObj(t) && Array.isArray(t.stations)),
     sessions,
     notes: list<SessionNote>(raw.notes).filter((n) => isObj(n) && typeof n.sessionId === "string")
   };

@@ -1,8 +1,9 @@
 import type { SessionTemplate } from "../domain/types";
 
-// Curated sessions in the club's standard shape: warm-up → (whole-group
-// focus drill on longer ice) → 4 stations with a free zone in the middle →
-// game. The planner sets the minutes from the ice time in 5-minute steps.
+// Curated sessions in the club's standard shape: warm-up 5 → gathering 5 →
+// 4 stations with a free zone in the middle → (whole-group focus drill on
+// longer ice) → game. Templates list 3 skill stations; the planner adds the
+// small-goal match as station D and sets all minutes from the ice time.
 // Stations must be drills that fit half an end zone (area "station"/"third").
 
 export const SEED_TEMPLATES: SessionTemplate[] = [
@@ -13,7 +14,7 @@ export const SEED_TEMPLATES: SessionTemplate[] = [
     focus: ["skating"],
     warmup: "w-redlight",
     extras: ["g-nest"],
-    stations: ["s-obstacle", "s-edges", "s-falls", "p-slalom"],
+    stations: ["s-obstacle", "s-edges", "s-falls"],
     game: "g-crossice"
   },
   {
@@ -23,7 +24,7 @@ export const SEED_TEMPLATES: SessionTemplate[] = [
     focus: ["puckHandling"],
     warmup: "w-follow",
     extras: ["g-nest"],
-    stations: ["p-ownspace", "p-slalom", "pa-gates", "s-obstacle"],
+    stations: ["p-ownspace", "p-slalom", "pa-gates"],
     game: "g-crossice"
   },
   {
@@ -33,7 +34,7 @@ export const SEED_TEMPLATES: SessionTemplate[] = [
     focus: ["passing", "shooting"],
     warmup: "w-passwarm",
     extras: ["sh-wrist"],
-    stations: ["pa-triangle", "pa-gates", "sh-rebounds", "sh-backhand"],
+    stations: ["pa-triangle", "pa-gates", "sh-rebounds"],
     game: "g-3v3"
   },
   {
@@ -43,7 +44,7 @@ export const SEED_TEMPLATES: SessionTemplate[] = [
     focus: ["skating", "puckHandling"],
     warmup: "w-kull",
     extras: ["s-crossovers"],
-    stations: ["s-edges", "s-pivots", "p-slalom", "p-headsup"],
+    stations: ["s-edges", "s-pivots", "p-slalom"],
     game: "g-crossice"
   },
   {
@@ -53,7 +54,7 @@ export const SEED_TEMPLATES: SessionTemplate[] = [
     focus: ["gameSense", "passing"],
     warmup: "w-passwarm",
     extras: ["pa-givego"],
-    stations: ["pa-triangle", "g-keepaway", "g-3v3", "p-protect"],
+    stations: ["pa-triangle", "g-keepaway", "p-protect"],
     game: "g-4nets"
   },
   {
@@ -63,7 +64,7 @@ export const SEED_TEMPLATES: SessionTemplate[] = [
     focus: ["shooting"],
     warmup: "w-mobility",
     extras: ["sh-passshot"],
-    stations: ["sh-rebounds", "sh-backhand", "pa-triangle", "p-drag"],
+    stations: ["sh-rebounds", "sh-backhand", "pa-triangle"],
     game: "g-3v3"
   },
   {
@@ -73,7 +74,7 @@ export const SEED_TEMPLATES: SessionTemplate[] = [
     focus: ["battles"],
     warmup: "w-mobility",
     extras: ["b-gap"],
-    stations: ["b-stick", "p-protect", "sh-rebounds", "g-3v3"],
+    stations: ["b-stick", "p-protect", "sh-rebounds"],
     game: "g-1v1corner"
   },
   {
@@ -83,7 +84,7 @@ export const SEED_TEMPLATES: SessionTemplate[] = [
     focus: ["skating"],
     warmup: "w-mobility",
     extras: ["s-crossovers"],
-    stations: ["s-pivots", "p-drag", "pa-triangle", "b-stick"],
+    stations: ["s-pivots", "p-drag", "pa-triangle"],
     game: "g-4nets"
   }
 ];

@@ -9,7 +9,7 @@ import { decodeShare } from "../domain/share";
 import { stationLetter } from "../domain/editParts";
 import { S, formatDayLong, formatTime } from "../i18n";
 import { RinkMode } from "./RinkMode";
-import { PlanTotal } from "./SessionScreen";
+import { GATHER_ICON, PlanTotal } from "./SessionScreen";
 
 const t = S.ui.shared;
 
@@ -95,15 +95,20 @@ export function SharedSession() {
           {shared.parts.map((part, i) => {
             const at = formatTime(minutesToTime(clock));
             clock += partMinutes(part);
-            const ids = part.type === "drill" ? [part.drillId] : part.drillIds;
+            const ids = part.type === "drill" ? [part.drillId] : part.type === "stations" ? part.drillIds : [];
             return (
               <li key={i} style={{ padding: "14px 0", borderBottom: "1px solid var(--line)" }}>
                 <div className="row__sub">
                   {at} ·{" "}
-                  {part.type === "drill"
-                    ? S.ui.common.minutes(part.minutes)
-                    : S.ui.session.stations(part.drillIds.length, part.minutesPerStation)}
+                  {part.type === "stations"
+                    ? S.ui.session.stations(part.drillIds.length, part.minutesPerStation)
+                    : S.ui.common.minutes(part.minutes)}
                 </div>
+                {part.type === "gather" && (
+                  <div className="row__title" style={{ marginTop: 6 }}>
+                    {GATHER_ICON} {S.ui.session.gather}
+                  </div>
+                )}
                 {ids.map((id, s) => {
                   const d = drillsById.get(id);
                   return (

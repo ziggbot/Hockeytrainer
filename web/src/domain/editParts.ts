@@ -18,14 +18,20 @@ export function removePart(parts: SessionPart[], partId: string): SessionPart[] 
   return parts.filter((p) => p.id !== partId);
 }
 
-/** Minutes for a drill part, or minutes per station for a rotation. */
+/** Minutes for a drill or gathering, or minutes per station for a rotation. */
 export function setPartMinutes(parts: SessionPart[], partId: string, minutes: number): SessionPart[] {
   return parts.map((p) => {
     if (p.id !== partId) return p;
-    return p.type === "drill"
-      ? { ...p, minutes: Math.max(MIN_PART_MINUTES, minutes) }
-      : { ...p, minutesPerStation: Math.max(MIN_STATION_MINUTES, minutes) };
+    return p.type === "stations"
+      ? { ...p, minutesPerStation: Math.max(MIN_STATION_MINUTES, minutes) }
+      : { ...p, minutes: Math.max(MIN_PART_MINUTES, minutes) };
   });
+}
+
+/** Put a gathering back right before the first rotation (or last, without one). */
+export function insertGather(parts: SessionPart[], gather: SessionPart): SessionPart[] {
+  const at = parts.findIndex((p) => p.type === "stations");
+  return at < 0 ? [...parts, gather] : [...parts.slice(0, at), gather, ...parts.slice(at)];
 }
 
 /** Replace the drill in a part (or in one station of a rotation). */
@@ -33,7 +39,7 @@ export function swapDrill(parts: SessionPart[], partId: string, drillId: string,
   return parts.map((p) => {
     if (p.id !== partId) return p;
     if (p.type === "drill") return { ...p, drillId };
-    if (station === undefined) return p;
+    if (p.type !== "stations" || station === undefined) return p;
     return { ...p, drillIds: p.drillIds.map((id, i) => (i === station ? drillId : id)) };
   });
 }

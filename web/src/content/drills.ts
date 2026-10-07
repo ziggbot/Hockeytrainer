@@ -508,6 +508,26 @@ const seed: SeedDrill[] = [
 
   // ── Spel och spelförståelse ─────────────────────────────────
   {
+    // The club's fixed station: every rotation has one plain game.
+    id: "g-smallgoals",
+    title: "Match mot små mål",
+    description:
+      "Gruppen delas i två lag och spelar match mot två småmål på stationens yta. Inga målvakter. Tränaren har puckar i fickan och spelar in en ny direkt när en puck försvinner, så spelet aldrig står still.",
+    coachingPoints: [
+      "Spela fram dig – passa eller åk mot mål",
+      "Alla hjälper till att vinna tillbaka pucken",
+      "Fira försöken, inte bara målen"
+    ],
+    skills: ["gameSense", "battles"],
+    kind: "game",
+    ageMin: 5,
+    ageMax: 20,
+    minutes: 10,
+    iceArea: "station",
+    minPlayers: 4,
+    equipment: [n("smallNets", 2), perPair("pinnies"), n("pucks", 5)]
+  },
+  {
     id: "g-3v3",
     title: "3 mot 3 i zonen",
     description:

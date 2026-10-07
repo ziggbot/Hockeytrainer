@@ -171,7 +171,15 @@ export function RinkMode({ persistKey, parts, drillsById, plannedStart, onExit, 
   const title = (seg: Segment) =>
     seg.part.type === "drill"
       ? (drillsById.get(seg.part.drillId)?.title ?? S.ui.common.unknownDrill)
-      : S.ui.session.stationsTitle;
+      : seg.part.type === "gather"
+        ? S.ui.session.gather
+        : S.ui.session.stationsTitle;
+
+  // The gathering shows where each group starts in the rotation that follows.
+  const rotationAfter = (index: number) => {
+    const part = segments.slice(index + 1).find((s) => s.part.type === "stations")?.part;
+    return part?.type === "stations" ? part : undefined;
+  };
 
   const current = segments[pos.segment];
   const next = segments[pos.segment + 1];
@@ -243,13 +251,28 @@ export function RinkMode({ persistKey, parts, drillsById, plannedStart, onExit, 
               >
                 <div className="rk-card__time">
                   {clockAt(seg.start)} ·{" "}
-                  {seg.part.type === "drill"
-                    ? S.ui.common.minutes(seg.minutes)
-                    : `${seg.part.drillIds.length} × ${S.ui.common.minutes(seg.part.minutesPerStation)}`}
+                  {seg.part.type === "stations"
+                    ? `${seg.part.drillIds.length} × ${S.ui.common.minutes(seg.part.minutesPerStation)}`
+                    : S.ui.common.minutes(seg.minutes)}
                 </div>
                 <h2 className="rk-card__title">{title(seg)}</h2>
                 {seg.part.type === "drill" ? (
                   <DrillBody drill={drillsById.get(seg.part.drillId)} />
+                ) : seg.part.type === "gather" ? (
+                  (() => {
+                    const next = rotationAfter(seg.index);
+                    return next ? (
+                      <Stations
+                        part={next}
+                        rotation={0}
+                        running={false}
+                        rotationLeft={0}
+                        drillsById={drillsById}
+                        mine={state.myStation}
+                        onPick={(i) => save({ ...state, myStation: state.myStation === i ? null : i })}
+                      />
+                    ) : null;
+                  })()
                 ) : (
                   <Stations
                     part={seg.part}

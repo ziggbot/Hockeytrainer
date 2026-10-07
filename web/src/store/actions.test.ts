@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { drillIdsOf, totalMinutes } from "../domain/planner";
+import { PLAN_VERSION, drillIdsOf, totalMinutes } from "../domain/planner";
 import { createTeam, newTrainingTime, planSession, replanSession } from "./actions";
 import { getState } from "./store";
 
@@ -56,7 +56,7 @@ describe("loading saved data", () => {
 });
 
 describe("planner upgrade", () => {
-  it("rebuilds untouched upcoming plans in the 4-station shape and keeps edited ones", async () => {
+  it("rebuilds untouched upcoming plans in the club's base shape and keeps edited ones", async () => {
     const { setState } = await import("./store");
     const { refreshUntouchedPlans } = await import("./actions");
     const team = createTeam({ name: "Upg", ageGroupId: "u10", playerCount: 14, schedule: [] });
@@ -77,7 +77,8 @@ describe("planner upgrade", () => {
     setState((s) => ({ ...s, sessions: [...s.sessions, old("untouched", false), old("edited", true)] }));
     refreshUntouchedPlans("2026-10-07");
     const rebuilt = session("untouched");
-    expect(rebuilt.planVersion).toBe(2);
+    expect(rebuilt.planVersion).toBe(PLAN_VERSION);
+    expect(rebuilt.parts.map((p) => p.type).slice(0, 3)).toEqual(["drill", "gather", "stations"]);
     expect(rebuilt.parts.some((p) => p.type === "stations" && p.drillIds.length === 4 && p.freeZone)).toBe(true);
     expect(totalMinutes(rebuilt.parts)).toBe(60);
     expect(session("edited").parts).toHaveLength(1);

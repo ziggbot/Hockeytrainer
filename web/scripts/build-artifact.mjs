@@ -28,7 +28,7 @@ const js = pick(".js").replace(/<\/script/gi, "<\\/script");
 
 const html = [
   "<title>Tränarappen</title>",
-  '<meta name="theme-color" content="#ffffff">',
+  '<meta name="theme-color" content="#eef2f6">',
   `<style>${css}</style>`,
   '<div id="root"></div>',
   `<script type="module">${js}</script>`,

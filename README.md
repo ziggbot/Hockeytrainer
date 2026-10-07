@@ -2,7 +2,7 @@
 
 Plan and run youth ice hockey practices from the club's season plan. Swedish UI, works rink-side with no signal. Product spec: [`SPEC_hockey.md`](SPEC_hockey.md).
 
-The UX follows the sibling app FitBlueprint: a hand-drawn notebook look with one big yellow **"Nu kör vi"** button.
+Design "Isen" (see `docs/decisions/0002-design-b-isen.md`): white cards on light grey, Inter + Barlow Condensed, one blue **"Nu kör vi"** button, colour + letter per station.
 
 ## Run it
 
@@ -29,7 +29,7 @@ The preview routes in memory and has no service worker (the sandbox forbids it),
 1. **First run:** team name, age group (U8–Junior), training days and ice time.
 2. **Träna (home):** the next ice time with a suggested plan built from the current **season block** (e.g. U10, weeks 34–41 → *Skridskoteknik*). **Nu kör vi** opens rink mode. *Den här veckan* lists the rolling 7 days.
 3. **Session:** running order with clock times, total vs. ice time, edit mode (minutes ±, reorder, swap, add, station rotations, *Nytt förslag*), equipment checklist, notes, share link.
-4. **Rink mode:** full screen, big type, one countdown per drill (survives screen lock and reload), wake lock, beep + vibration at zero. Station rotations show which group is at which station; each coach can tap *their* station. Ends with quick tags + a note.
+4. **Rink mode:** tap "Starta passet" once; the screen then follows the clock. The feed scrolls to the running part, a timeline on the right ticks along, and it beeps/vibrates at each new part or station rotation. No taps needed with gloves on. Stations show which group is where; each coach can mark *their* station. Ends with quick tags + a note.
 5. **Övningar:** 41 seed drills. Filter by age, skill, ice area and length. Coaches can add their own drills, with a photo of a whiteboard sketch.
 6. **Säsong:** the age group's blocks with focus skills, the current week highlighted, coverage (✓ when a focus skill was trained in a completed session), editable blocks and philosophy, and recent sessions with notes.
 

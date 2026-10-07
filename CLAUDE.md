@@ -7,17 +7,18 @@ A free, Swedish-language planning tool for volunteer youth ice hockey coaches. I
 - **`web/`** — React + Vite + TypeScript PWA. The only client. See `docs/decisions/0001-web-pwa-local-first.md` for why not Expo.
 - **Backend** — not wired yet. Planned: Supabase in an **EU region** (spec §7). Until then all data is local to the device.
 
-## UX language (shared with the sibling app FitBlueprint)
+## UX language — design B "Isen" (chosen by the club, see ADR 0002)
 
-Simple and clear beats feature-rich. Keep to these patterns:
+Simple, clear and usable rink-side beats feature-rich. Keep to these patterns:
 
-- Fonts: **Caveat 700** for headings, buttons, nav and day labels. **Patrick Hand** for body text. Both are bundled via `@fontsource` so they work offline. Never load fonts from a CDN.
-- One **yellow CTA** per screen (`.cta`, `#ffc21a`, thick ink border, offset shadow). Everything else is ink-on-white: `.btn`, `.chip`, `.check`, `.link`.
-- Sections: Caveat `h2` with a thick ink rule under it and an optional small gray note on the right (`.section__head`).
-- Lists: `.row` = grayscale emoji icon · Caveat day/time label · title + gray sub-line · hand-drawn checkbox. Rows are separated by dashed lines.
-- Emoji are monochrome (`filter: grayscale(1)`) except the active nav item.
-- Tap targets ≥ 44px; in rink mode ≥ 64px (gloves).
+- Fonts: **Inter** (400/600/700) for reading; **Barlow Condensed** 600/700 in caps for headings, labels and clocks (`.display`). Bundled via `@fontsource` so they work offline. Never load fonts from a CDN.
+- Light ground (`--bg`) with white cards (`--surface`); dark text on light — it reads best in a bright arena. All colours are tokens in `web/src/design/global.css`.
+- One primary button per screen: `.cta` (blue `--accent`). Everything else: `.btn` / `.chip` pills, `.link`.
+- Stations are always **colour + letter** (A red, B blue, C green, D purple) via `stationStyle(i)` — never colour alone.
+- Lists: `.rows` is a white card; `.row` = icon · time/day label · title + grey sub-line · checkbox.
+- Tap targets ≥ 44px.
 - Minimal text: no explanatory hints, section notes or disclaimers unless the screen can't be used without them. The club asked for this explicitly.
+- Rink mode needs **no taps after "Starta passet"** (gloves): one clock for the whole practice, the feed scrolls to the running part, a timeline rail ticks on the right, beeps at each new part/rotation. Timeline logic is pure and tested in `web/src/domain/timeline.ts`.
 - Check every UI change at 320, 360 and 390 px wide: no horizontal overflow.
 
 ## Club's session shape (from the club, keep it)

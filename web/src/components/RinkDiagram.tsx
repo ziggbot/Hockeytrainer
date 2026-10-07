@@ -30,7 +30,8 @@ export function RinkDiagram({ area, width = 120 }: { area: IceArea; width?: numb
           <rect x="0" y="0" width={W} height={H} rx="28" />
         </clipPath>
       </defs>
-      <rect x={a.x} y={a.y} width={a.w} height={a.h} fill="var(--yellow)" clipPath={`url(#rink-clip-${area})`} />
+      <rect x="0" y="0" width={W} height={H} rx="28" fill="var(--surface)" />
+      <rect x={a.x} y={a.y} width={a.w} height={a.h} fill="var(--area)" clipPath={`url(#rink-clip-${area})`} />
       <g stroke="var(--faint)" strokeWidth="2" fill="none">
         <line x1={W / 2} y1="0" x2={W / 2} y2={H} />
         <line x1="76" y1="0" x2="76" y2={H} />

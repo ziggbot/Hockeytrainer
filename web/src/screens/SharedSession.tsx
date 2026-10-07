@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { LogoMark } from "../components/Icons";
+import { stationStyle } from "../components/stationColor";
 import { SEED_DRILLS } from "../content/drills";
 import { minutesToTime, parseISODate, timeToMinutes } from "../domain/dates";
 import { partMinutes, totalMinutes } from "../domain/planner";
@@ -55,6 +56,7 @@ export function SharedSession() {
         persistKey={`shared-${fingerprint(hash)}`}
         parts={shared.parts}
         drillsById={drillsById}
+        plannedStart={shared.start}
         onExit={() => setRink(false)}
       />
     );
@@ -95,7 +97,7 @@ export function SharedSession() {
             clock += partMinutes(part);
             const ids = part.type === "drill" ? [part.drillId] : part.drillIds;
             return (
-              <li key={i} style={{ padding: "14px 0", borderBottom: "1.5px dashed var(--line)" }}>
+              <li key={i} style={{ padding: "14px 0", borderBottom: "1px solid var(--line)" }}>
                 <div className="row__sub">
                   {at} ·{" "}
                   {part.type === "drill"
@@ -108,7 +110,7 @@ export function SharedSession() {
                     <details key={`${id}-${s}`} style={{ marginTop: 6 }}>
                       <summary className="row__title" style={{ cursor: "pointer" }}>
                         {part.type === "stations" && (
-                          <span className="station-letter" style={{ marginRight: 8 }}>
+                          <span className="station-letter" style={{ ...stationStyle(s), marginRight: 8 }}>
                             {stationLetter(s)}
                           </span>
                         )}

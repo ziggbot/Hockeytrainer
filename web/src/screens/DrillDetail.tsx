@@ -55,16 +55,12 @@ export function DrillDetail() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
           <RinkDiagram area={drill.iceArea} width={150} />
-          <span className="hand" style={{ fontSize: 28 }}>
+          <span className="display" style={{ fontSize: 22 }}>
             {S.iceAreas[drill.iceArea]}
           </span>
         </div>
         {drill.diagram && (
-          <img
-            src={drill.diagram}
-            alt=""
-            style={{ display: "block", width: "100%", marginTop: 16, border: "2px solid var(--ink)", borderRadius: 6 }}
-          />
+          <img src={drill.diagram} alt="" style={{ display: "block", width: "100%", marginTop: 16, borderRadius: 12 }} />
         )}
 
         <p style={{ marginTop: 16, fontSize: 20 }}>{drill.description}</p>
@@ -155,7 +151,7 @@ function AddToSessionSheet({ drill, onClose, onAdded }: { drill: Drill; onClose:
                   width: "100%",
                   background: "none",
                   border: 0,
-                  borderBottom: "1.5px dashed var(--line)",
+                  borderBottom: "1px solid var(--line)",
                   textAlign: "left"
                 }}
                 onClick={() => {
@@ -170,7 +166,7 @@ function AddToSessionSheet({ drill, onClose, onAdded }: { drill: Drill; onClose:
                   <div className="row__title">{label}</div>
                   <div className="row__sub">{slot.session?.title ?? S.ui.home.unplanned}</div>
                 </span>
-                <span className="hand" style={{ fontSize: 30 }} aria-hidden="true">
+                <span className="display" style={{ fontSize: 24 }} aria-hidden="true">
                   +
                 </span>
               </button>

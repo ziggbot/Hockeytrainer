@@ -230,13 +230,7 @@ export function DrillEditor() {
       <div className="field">
         <span className="field__label">{t.diagram}</span>
         <span className="field__hint">{t.diagramHint}</span>
-        {diagram && (
-          <img
-            src={diagram}
-            alt=""
-            style={{ display: "block", width: "100%", marginTop: 10, border: "2px solid var(--ink)", borderRadius: 6 }}
-          />
-        )}
+        {diagram && <img src={diagram} alt="" style={{ display: "block", width: "100%", marginTop: 10, borderRadius: 12 }} />}
         <div style={{ display: "flex", gap: 16, alignItems: "center", marginTop: 10, flexWrap: "wrap" }}>
           <input
             type="file"

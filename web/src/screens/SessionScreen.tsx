@@ -4,6 +4,7 @@ import { AppLink } from "../components/AppLink";
 import { BackBar, BottomNav } from "../components/Chrome";
 import { Check } from "../components/Check";
 import { ConfirmButton } from "../components/ConfirmButton";
+import { stationStyle } from "../components/stationColor";
 import { DrillPicker } from "../components/DrillPicker";
 import { Stepper } from "../components/Stepper";
 import { parseISODate, timeToMinutes, minutesToTime } from "../domain/dates";
@@ -146,7 +147,7 @@ export function SessionScreen() {
                   ) : (
                     <div className="stations">
                       <div className="stations__head">
-                        <span className="hand" style={{ fontSize: 26 }}>
+                        <span className="display" style={{ fontSize: 20 }}>
                           {startsAt} · {t.stations(part.drillIds.length, part.minutesPerStation)}
                         </span>
                       </div>
@@ -203,7 +204,7 @@ export function SessionScreen() {
                     </div>
                   )}
                   {editing && (
-                    <div className="edit-bar" style={{ borderBottom: "1.5px dashed var(--line)", paddingBottom: 10 }}>
+                    <div className="edit-bar" style={{ borderBottom: "1px solid var(--line)", paddingBottom: 10 }}>
                       <Stepper
                         value={part.type === "drill" ? part.minutes : part.minutesPerStation}
                         onChange={(m) => edit(setPartMinutes(parts, part.id, m))}
@@ -384,7 +385,9 @@ export function DrillRow({
         {drill && sub && <div className="row__sub">{sub}</div>}
       </span>
       {letter ? (
-        <span className="station-letter">{letter}</span>
+        <span className="station-letter" style={stationStyle(letter.charCodeAt(0) - 65)}>
+          {letter}
+        </span>
       ) : (
         <span aria-hidden="true" className="muted">
           ›
@@ -418,7 +421,7 @@ export function FreeZoneRow() {
 export function PlanTotal({ total, slot, diff }: { total: number; slot: number; diff: number }) {
   return (
     <div className={`plan-total${diff > 0 ? " plan-total--over" : ""}`}>
-      <span className="hand" style={{ fontSize: 26 }}>
+      <span className="display" style={{ fontSize: 20 }}>
         {t.total(total, slot)}
       </span>
       {diff !== 0 && <span>{diff > 0 ? t.over(diff) : t.under(-diff)}</span>}
@@ -457,7 +460,7 @@ function NotesSection({
       {notes.length > 0 && (
         <ul className="rows">
           {notes.map((n) => (
-            <li key={n.id} style={{ padding: "12px 0", borderBottom: "1.5px dashed var(--line)" }}>
+            <li key={n.id} style={{ padding: "12px 0", borderBottom: "1px solid var(--line)" }}>
               <div className="row__sub">{formatDayShort(new Date(n.createdAt))}</div>
               {n.tags.length > 0 && (
                 <div className="tags">

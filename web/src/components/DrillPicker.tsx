@@ -69,7 +69,7 @@ export function DrillPicker({ title, drills, ageGroup, onPick, onClose }: Props)
                 width: "100%",
                 background: "none",
                 border: 0,
-                borderBottom: "1.5px dashed var(--line)",
+                borderBottom: "1px solid var(--line)",
                 textAlign: "left"
               }}
               onClick={() => onPick(d)}
@@ -81,7 +81,7 @@ export function DrillPicker({ title, drills, ageGroup, onPick, onClose }: Props)
                   {S.ui.common.minutes(d.minutes)} · {S.iceAreas[d.iceArea]} · {S.kinds[d.kind]}
                 </div>
               </span>
-              <span className="hand" style={{ fontSize: 30 }} aria-hidden="true">
+              <span className="display" style={{ fontSize: 24 }} aria-hidden="true">
                 +
               </span>
             </button>

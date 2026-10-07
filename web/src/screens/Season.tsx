@@ -59,7 +59,7 @@ export function Season() {
                 <li key={block.id}>
                   <div
                     className="row row--compact"
-                    style={isNow ? { background: "var(--yellow-soft)", margin: "0 -8px", padding: "16px 8px" } : undefined}
+                    style={isNow ? { background: "var(--accent-soft)", margin: "0 -14px", padding: "12px 14px" } : undefined}
                   >
                     <span className="row__icon">{S.skillIcons[block.focus[0]]}</span>
                     <span className="row__main">
@@ -96,7 +96,7 @@ export function Season() {
             </div>
             <p style={{ fontSize: 20 }}>{curriculum.philosophy}</p>
             <p className="sub">
-              <strong className="hand" style={{ fontSize: 22, color: "var(--ink)" }}>
+              <strong className="display" style={{ fontSize: 18, color: "var(--ink)" }}>
                 {t.gameFormat}:
               </strong>{" "}
               {ageGroup.gameFormat}

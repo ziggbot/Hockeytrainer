@@ -124,7 +124,7 @@ a[role="link"] {
   gap: 8px;
   font-family: var(--display);
   font-weight: 700;
-  font-size: 26px;
+  font-size: 20px;
   letter-spacing: 1px;
   text-transform: uppercase;
   text-decoration: none;
@@ -176,8 +176,10 @@ a[role="link"] {
   line-height: 1;
 }
 
+/* The greeting in sentence case ("Hej tränare."), unlike the caps titles. */
 .hello {
   font-size: 40px;
+  text-transform: none;
 }
 
 .title {
@@ -453,8 +455,8 @@ a[role="link"] {
 }
 
 .check[aria-checked="true"] {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--cta);
+  border-color: var(--cta);
 }
 
 .check svg {

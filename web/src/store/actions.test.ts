@@ -79,8 +79,43 @@ describe("planner upgrade", () => {
     const rebuilt = session("untouched");
     expect(rebuilt.planVersion).toBe(PLAN_VERSION);
     expect(rebuilt.parts.map((p) => p.type).slice(0, 3)).toEqual(["drill", "gather", "stations"]);
+    expect(rebuilt.parts[rebuilt.parts.length - 1].type).toBe("closing");
     expect(rebuilt.parts.some((p) => p.type === "stations" && p.drillIds.length === 4 && p.freeZone)).toBe(true);
     expect(totalMinutes(rebuilt.parts)).toBe(60);
     expect(session("edited").parts).toHaveLength(1);
+  });
+
+  it("puts kept plans with first-version minutes on the 5-minute grid without marking them edited", async () => {
+    const { setState } = await import("./store");
+    const { snapOffGridPlans } = await import("./actions");
+    const team = createTeam({ name: "Snap", ageGroupId: "u10", playerCount: 14, schedule: [] });
+    setState((s) => ({
+      ...s,
+      sessions: [
+        ...s.sessions,
+        {
+          id: "done-v1",
+          teamId: team.id,
+          date: "2026-10-05",
+          start: "18:00",
+          minutes: 60,
+          title: "Gammalt",
+          focus: [],
+          parts: [
+            { id: "a", type: "drill", drillId: "w-kull", minutes: 8 },
+            { id: "b", type: "drill", drillId: "pa-triangle", minutes: 42 },
+            { id: "c", type: "drill", drillId: "g-3v3", minutes: 10 }
+          ],
+          status: "done",
+          equipmentChecked: [],
+          createdAt: "2026-10-01T10:00:00Z",
+          updatedAt: "2026-10-05T19:00:00Z"
+        }
+      ]
+    }));
+    snapOffGridPlans();
+    const snapped = session("done-v1");
+    expect(snapped.parts.map((p) => (p.type === "stations" ? p.minutesPerStation : p.minutes))).toEqual([10, 40, 10]);
+    expect(snapped.updatedAt).toBe("2026-10-05T19:00:00Z");
   });
 });

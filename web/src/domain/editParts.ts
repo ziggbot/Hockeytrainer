@@ -1,5 +1,5 @@
 import type { SessionPart } from "./types";
-import { MIN_PART_MINUTES, MIN_STATION_MINUTES } from "./planner";
+import { MIN_PART_MINUTES, MIN_STATION_MINUTES, roundToStep } from "./planner";
 
 // Pure edits on a session's running order (spec §5.4: swap, reorder, adjust
 // minutes). Every function returns a new array.
@@ -23,8 +23,8 @@ export function setPartMinutes(parts: SessionPart[], partId: string, minutes: nu
   return parts.map((p) => {
     if (p.id !== partId) return p;
     return p.type === "stations"
-      ? { ...p, minutesPerStation: Math.max(MIN_STATION_MINUTES, minutes) }
-      : { ...p, minutes: Math.max(MIN_PART_MINUTES, minutes) };
+      ? { ...p, minutesPerStation: Math.max(MIN_STATION_MINUTES, roundToStep(minutes)) }
+      : { ...p, minutes: Math.max(MIN_PART_MINUTES, roundToStep(minutes)) };
   });
 }
 

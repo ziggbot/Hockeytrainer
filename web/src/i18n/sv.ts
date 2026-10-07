@@ -141,6 +141,8 @@ export const sv = {
       // Soft hyphen: the big rink title can break the compound at 320 px.
       gather: "Samling och stations\u00ADuppdelning",
       addGather: "Samling",
+      closing: "Avslutande samling",
+      addClosing: "Avslutning",
       freeZone: "Fri zon i mitten",
       perStation: "min per station",
       swap: "Byt",

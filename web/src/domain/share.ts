@@ -1,6 +1,6 @@
 import { ICE_AREAS, SKILLS, type Drill, type PartDraft, type Session, type Skill } from "./types";
 import { EQUIPMENT_ORDER } from "./equipment";
-import { drillIdsOf } from "./planner";
+import { drillIdsOf, snapToSteps } from "./planner";
 
 // Read-only share link (spec §5.7) without a backend: the session snapshot
 // travels in the URL fragment, which browsers never send to the server.
@@ -64,9 +64,9 @@ function cleanPart(p: unknown): PartDraft | null {
     const minutes = num(o.minutes);
     return drillId && minutes !== null ? { type: "drill", drillId, minutes: Math.max(1, Math.min(180, minutes)) } : null;
   }
-  if (o.type === "gather") {
+  if (o.type === "gather" || o.type === "closing") {
     const minutes = num(o.minutes);
-    return minutes !== null ? { type: "gather", minutes: Math.max(1, Math.min(60, minutes)) } : null;
+    return minutes !== null ? { type: o.type, minutes: Math.max(1, Math.min(60, minutes)) } : null;
   }
   if (o.type === "stations" && Array.isArray(o.drillIds)) {
     const drillIds = o.drillIds
@@ -124,6 +124,7 @@ export function decodeShare(fragment: string): SharedSession | null {
   try {
     const data = JSON.parse(fromBase64Url(fragment.replace(/^#/, "")));
     if (data?.v !== 1 || !Array.isArray(data.parts)) return null;
+    const minutes = num(data.minutes) ?? 0;
     const parts = (data.parts as unknown[])
       .map(cleanPart)
       .filter((p): p is PartDraft => !!p)
@@ -133,9 +134,10 @@ export function decodeShare(fragment: string): SharedSession | null {
       title: str(data.title, 200) ?? "",
       date: str(data.date, 10) ?? "",
       start: str(data.start, 5) ?? "",
-      minutes: num(data.minutes) ?? 0,
+      minutes,
       team: str(data.team, 100) ?? "",
-      parts,
+      // Links from the first app version can carry 42-minute parts.
+      parts: snapToSteps(parts, minutes),
       drills: (Array.isArray(data.drills) ? data.drills : [])
         .map(cleanDrill)
         .filter((d: Drill | null): d is Drill => !!d)

@@ -13,10 +13,14 @@ export const STATION_COUNT = 4;
 /** Every practice opens with these (club's base). */
 export const WARMUP_MINUTES = 5;
 export const GATHER_MINUTES = 5;
+/** Every practice ends with a closing talk: 5 min, or 10 on long ice. */
+export const CLOSING_MINUTES = 5;
+export const LONG_PRACTICE_MINUTES = 75;
+export const closingMinutes = (total: number) => (total >= LONG_PRACTICE_MINUTES ? 2 * STEP : CLOSING_MINUTES);
 /** One station of every rotation is a plain game against small goals; it is the last one. */
 export const MATCH_STATION_ID = "g-smallgoals";
 /** Bumped when the planner's output shape changes; see store `refreshUntouchedPlans`. */
-export const PLAN_VERSION = 3;
+export const PLAN_VERSION = 4;
 
 export const roundToStep = (m: number) => Math.max(STEP, Math.round(m / STEP) * STEP);
 
@@ -42,22 +46,33 @@ export interface Allocation {
   extras: number[];
   /** 0 when there is no time left for a game. */
   game: number;
+  closing: number;
 }
 
 /**
  * Split an ice slot into the club's base, all in 5-minute steps: warm-up 5,
- * gathering 5, rotation of 4 × 5 (or 4 × 10 from 60 min), then a game up to
- * 20 and whole-group drills of 10–20 min for whatever is left.
+ * gathering 5, rotation of 4 × 5 (or 4 × 10 from 60 min) and a closing talk
+ * of 5 (10 from 75 min). What is left becomes a game up to 20 and
+ * whole-group drills of 10–20 min; 5 minutes left over go to the warm-up.
  */
 export function allocate(total: number, stations = STATION_COUNT): Allocation {
   const t = Math.floor(total / STEP) * STEP;
-  if (t < WARMUP_MINUTES + GATHER_MINUTES + STEP * stations) {
-    // Too short for a rotation: warm-up and a game.
-    return { warmup: Math.min(t, WARMUP_MINUTES), gather: 0, perStation: 0, extras: [], game: Math.max(0, t - WARMUP_MINUTES) };
+  const closing = closingMinutes(t);
+  if (t < WARMUP_MINUTES + GATHER_MINUTES + STEP * stations + closing) {
+    // Too short for a rotation: warm-up, a game and the closing talk.
+    const warmup = Math.min(t, WARMUP_MINUTES);
+    const end = Math.min(CLOSING_MINUTES, t - warmup);
+    return { warmup, gather: 0, perStation: 0, extras: [], game: t - warmup - end, closing: end };
   }
   const perStation = t >= 60 ? 2 * STEP : STEP;
-  let left = t - WARMUP_MINUTES - GATHER_MINUTES - perStation * stations;
-  const base = { warmup: WARMUP_MINUTES, gather: GATHER_MINUTES, perStation };
+  let warmup = WARMUP_MINUTES;
+  let left = t - warmup - GATHER_MINUTES - perStation * stations - closing;
+  // Too short for a part of its own.
+  if (left === STEP) {
+    warmup += STEP;
+    left = 0;
+  }
+  const base = { warmup, gather: GATHER_MINUTES, perStation, closing };
   if (left <= 20) return { ...base, extras: [], game: left };
   let game = 15;
   left -= game;
@@ -84,7 +99,7 @@ export interface Blueprint {
   game?: string;
 }
 
-/** warm-up → gathering → stations (+ free zone) → whole-group drills → game */
+/** warm-up → gathering → stations (+ free zone) → whole-group drills → game → closing */
 export function assemble(bp: Blueprint, minutes: number): PartDraft[] {
   const a = allocate(minutes, bp.stations.length || STATION_COUNT);
   const parts: PartDraft[] = [];
@@ -97,7 +112,39 @@ export function assemble(bp: Blueprint, minutes: number): PartDraft[] {
     if (bp.extras[i]) parts.push({ type: "drill", drillId: bp.extras[i], minutes: m });
   });
   if (bp.game && a.game > 0) parts.push({ type: "drill", drillId: bp.game, minutes: a.game });
+  if (a.closing > 0) parts.push({ type: "closing", minutes: a.closing });
   return parts;
+}
+
+const partStep = (p: PartDraft | SessionPart) => (p.type === "stations" ? p.minutesPerStation : p.minutes);
+
+/**
+ * Plans from the app's first version (and links made with it) can hold parts
+ * like 42 or 7 minutes. Round every part to the 5-minute grid; if that leaves
+ * the plan 5 minutes short, the warm-up gets them, and if it runs over the
+ * slot, the longest parts give back 5 at a time. Plans already on the grid
+ * are returned as they are.
+ */
+export function snapToSteps<T extends PartDraft | SessionPart>(parts: T[], slot: number): T[] {
+  if (parts.every((p) => partStep(p) % STEP === 0)) return parts;
+  const out = parts.map((p) =>
+    p.type === "stations"
+      ? { ...p, minutesPerStation: roundToStep(p.minutesPerStation) }
+      : { ...p, minutes: roundToStep(p.minutes) }
+  ) as T[];
+  const target = Math.floor(slot / STEP) * STEP;
+  const first = out[0];
+  if (first?.type === "drill" && target - totalMinutes(out) >= STEP) out[0] = { ...first, minutes: first.minutes + STEP };
+  while (totalMinutes(out) > target) {
+    let longest = -1;
+    out.forEach((p, i) => {
+      if (p.type !== "stations" && p.minutes > STEP && (longest < 0 || p.minutes > partStep(out[longest]))) longest = i;
+    });
+    if (longest < 0) break;
+    const p = out[longest];
+    if (p.type !== "stations") out[longest] = { ...p, minutes: p.minutes - STEP };
+  }
+  return out;
 }
 
 export interface PlanContext {
@@ -215,6 +262,9 @@ function candidates(ctx: PlanContext, seed: number) {
 
 const firstNotIn = (list: string[], used: Set<string>) => list.find((id) => !used.has(id));
 
+/** Enough whole-group drills for the longest ice time (180 min). */
+const MAX_EXTRAS = 6;
+
 function takeDistinct(list: string[], count: number, used: Set<string>): string[] {
   const out: string[] = [];
   for (const id of list) {
@@ -236,7 +286,7 @@ export function suggestPlan(ctx: PlanContext): PlanSuggestion {
     // Without the match drill, a library station takes its place.
     const stations = [...t.stations, ...(match ? [match] : takeDistinct(c.stations, 1, used))];
     // Long slots may need more whole-group drills than the template lists.
-    const fill = takeDistinct(c.extras, 3, used);
+    const fill = takeDistinct(c.extras, MAX_EXTRAS, used);
     const bp: Blueprint = { warmup: t.warmup, stations, extras: [...t.extras, ...fill], game: t.game };
     return { title: t.title, focus: t.focus, parts: assemble(bp, ctx.minutes), templateId: t.id };
   }
@@ -257,6 +307,6 @@ export function generatePlan(ctx: PlanContext, seed: number): PlanSuggestion {
   const stations = match ? [...skill, match] : skill;
   const game = firstNotIn(c.games, used);
   if (game) used.add(game);
-  const extras = takeDistinct(c.extras, 3, used);
+  const extras = takeDistinct(c.extras, MAX_EXTRAS, used);
   return { focus: c.focus, parts: assemble({ warmup, stations, extras, game }, ctx.minutes) };
 }

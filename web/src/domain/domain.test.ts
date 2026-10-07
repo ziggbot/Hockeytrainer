@@ -4,6 +4,7 @@ import { currentBlock } from "./curriculum";
 import {
   MATCH_STATION_ID,
   allocate,
+  snapToSteps,
   drillIdsOf,
   generatePlan,
   matchingTemplates,
@@ -105,28 +106,55 @@ describe("seed content", () => {
 });
 
 describe("planner", () => {
-  it.each([25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 120])("splits %i min into 5-minute segments", (t) => {
+  it.each([15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90, 120, 180])("splits %i min into 5-minute segments", (t) => {
     const a = allocate(t);
-    const sum = a.warmup + a.gather + a.perStation * 4 + a.extras.reduce((x, y) => x + y, 0) + a.game;
+    const sum = a.warmup + a.gather + a.perStation * 4 + a.extras.reduce((x, y) => x + y, 0) + a.game + a.closing;
     expect(sum).toBe(t);
-    for (const m of [a.warmup, ...a.extras]) expect(isStep(m)).toBe(true);
-    expect(a.perStation % 5).toBe(0);
-    expect(a.game % 5).toBe(0);
+    for (const m of [a.warmup, a.closing, ...a.extras]) expect(isStep(m)).toBe(true);
+    for (const m of [a.perStation, a.game, a.gather]) expect(m % 5).toBe(0);
     expect(a.game).toBeLessThanOrEqual(20);
-    expect(a.warmup).toBe(5);
+    expect([5, 10]).toContain(a.warmup);
+    expect([5, 10]).toContain(a.closing);
     expect(a.gather).toBe(a.perStation > 0 ? 5 : 0);
     for (const m of a.extras) expect(m >= 10 && m <= 20).toBe(true);
   });
 
-  it("opens with 5 min warm-up and 5 min gathering, then 4 × 5 below an hour and 4 × 10 from an hour", () => {
-    expect(allocate(30)).toEqual({ warmup: 5, gather: 5, perStation: 5, extras: [], game: 0 });
-    expect(allocate(45)).toEqual({ warmup: 5, gather: 5, perStation: 5, extras: [], game: 15 });
-    expect(allocate(60)).toEqual({ warmup: 5, gather: 5, perStation: 10, extras: [], game: 10 });
-    expect(allocate(90)).toEqual({ warmup: 5, gather: 5, perStation: 10, extras: [15, 10], game: 15 });
+  it("opens with warm-up and gathering, rotates 4 × 5 below an hour and 4 × 10 from an hour, and ends with a closing talk", () => {
+    expect(allocate(35)).toEqual({ warmup: 5, gather: 5, perStation: 5, extras: [], game: 0, closing: 5 });
+    expect(allocate(45)).toEqual({ warmup: 5, gather: 5, perStation: 5, extras: [], game: 10, closing: 5 });
+    expect(allocate(65)).toEqual({ warmup: 5, gather: 5, perStation: 10, extras: [], game: 10, closing: 5 });
+    expect(allocate(75)).toEqual({ warmup: 5, gather: 5, perStation: 10, extras: [], game: 15, closing: 10 });
+    expect(allocate(90)).toEqual({ warmup: 5, gather: 5, perStation: 10, extras: [15], game: 15, closing: 10 });
+  });
+
+  it("gives 5 minutes left over to the warm-up", () => {
+    expect(allocate(40)).toEqual({ warmup: 10, gather: 5, perStation: 5, extras: [], game: 0, closing: 5 });
+    expect(allocate(60)).toEqual({ warmup: 10, gather: 5, perStation: 10, extras: [], game: 0, closing: 5 });
   });
 
   it("skips the rotation when the ice time is too short", () => {
-    expect(allocate(25)).toEqual({ warmup: 5, gather: 0, perStation: 0, extras: [], game: 20 });
+    expect(allocate(30)).toEqual({ warmup: 5, gather: 0, perStation: 0, extras: [], game: 20, closing: 5 });
+    expect(allocate(15)).toEqual({ warmup: 5, gather: 0, perStation: 0, extras: [], game: 5, closing: 5 });
+  });
+
+  it.each(AGE_GROUPS.map((a) => a.id))("keeps every suggestion for %s on the 5-minute grid and inside the slot", (id) => {
+    for (let minutes = 15; minutes <= 180; minutes += 5) {
+      for (let variant = 0; variant < 6; variant++) {
+        const parts = suggestPlan({
+          ageGroup: ag(id),
+          playerCount: 14,
+          focus: cur(id).blocks[variant % cur(id).blocks.length].focus,
+          targetSkills: cur(id).targetSkills,
+          minutes,
+          drills: SEED_DRILLS,
+          templates: SEED_TEMPLATES,
+          variant
+        }).parts;
+        for (const m of minutesOf(parts)) expect(isStep(m), `${id} ${minutes} v${variant}`).toBe(true);
+        expect(totalMinutes(parts), `${id} ${minutes} v${variant}`).toBe(minutes);
+        expect(parts[parts.length - 1].type, `${id} ${minutes} v${variant}`).toBe("closing");
+      }
+    }
   });
 
   it("prefers a template matching the block focus", () => {
@@ -142,7 +170,7 @@ describe("planner", () => {
     });
     expect(s.templateId).toBe("t-u10-passshoot");
     expect(totalMinutes(s.parts)).toBe(50);
-    expect(s.parts.map((p) => p.type)).toEqual(["drill", "gather", "stations", "drill"]);
+    expect(s.parts.map((p) => p.type)).toEqual(["drill", "gather", "stations", "drill", "closing"]);
     const stations = s.parts.find((p) => p.type === "stations");
     expect(stations).toMatchObject({ drillIds: ["pa-triangle", "pa-gates", "sh-rebounds", MATCH_STATION_ID], freeZone: true });
   });
@@ -163,9 +191,9 @@ describe("planner", () => {
     expect(totalMinutes(s.parts)).toBe(45);
   });
 
-  it.each(AGE_GROUPS.map((a) => a.id))("generates the base, 4 stations + free zone and a game for %s", (id) => {
+  it.each(AGE_GROUPS.map((a) => a.id))("generates the base, 4 stations + free zone, a game and the closing for %s", (id) => {
     for (const block of cur(id).blocks) {
-      for (const minutes of [45, 60, 90]) {
+      for (const minutes of [45, 65, 90]) {
         const plan = generatePlan(
           {
             ageGroup: ag(id),
@@ -182,6 +210,7 @@ describe("planner", () => {
         expect(totalMinutes(plan.parts)).toBe(minutes);
         for (const m of minutesOf(plan.parts)) expect(isStep(m)).toBe(true);
         expect(plan.parts[0]).toMatchObject({ type: "drill", minutes: 5 });
+        expect(plan.parts[plan.parts.length - 1]).toEqual({ type: "closing", minutes: minutes >= 75 ? 10 : 5 });
         expect(plan.parts[1]).toEqual({ type: "gather", minutes: 5 });
         const stations = plan.parts[2];
         expect(stations?.type === "stations" && stations.drillIds.length, `${id} ${block.name}`).toBe(4);
@@ -214,9 +243,10 @@ describe("planner", () => {
     for (let variant = 0; variant < count; variant++) {
       const parts = suggestPlan({ ...ctx, variant }).parts;
       expect(parts.slice(0, 2), `${id} v${variant}`).toMatchObject([
-        { type: "drill", minutes: 5 },
+        { type: "drill", minutes: 10 },
         { type: "gather", minutes: 5 }
       ]);
+      expect(parts[parts.length - 1]).toEqual({ type: "closing", minutes: 5 });
       const stations = parts[2];
       expect(stations.type === "stations" && stations.drillIds, `${id} v${variant}`).toHaveLength(4);
       expect(stations.type === "stations" && stations.drillIds.indexOf(MATCH_STATION_ID)).toBe(3);
@@ -253,10 +283,37 @@ describe("editing the plan", () => {
     expect(insertGather([parts[0]], g).map((p) => p.id)).toEqual(["w", "g"]);
   });
 
+  it("keeps edited minutes on the 5-minute grid", () => {
+    expect(setPartMinutes(parts, "w", 42)[0]).toMatchObject({ minutes: 40 });
+    expect(setPartMinutes(parts, "s", 8)[1]).toMatchObject({ minutesPerStation: 10 });
+  });
+
   it("steps a gathering's minutes like a drill's", () => {
     const g: SessionPart = { id: "g", type: "gather", minutes: 5 };
     expect(setPartMinutes([g], "g", 10)).toEqual([{ id: "g", type: "gather", minutes: 10 }]);
     expect(setPartMinutes([g], "g", 0)).toEqual([{ id: "g", type: "gather", minutes: 5 }]);
+  });
+});
+
+describe("snapping old plans to the 5-minute grid", () => {
+  const drill = (drillId: string, minutes: number): PartDraft => ({ type: "drill", drillId, minutes });
+
+  it("rounds a 42-minute drill and gives the warm-up 5 more when short", () => {
+    // First-version plan: 8 + 42 + 10 = 60.
+    const snapped = snapToSteps([drill("w-kull", 8), drill("pa-triangle", 42), drill("g-3v3", 10)], 60);
+    expect(minutesOf(snapped)).toEqual([10, 40, 10]);
+    expect(totalMinutes(snapped)).toBe(60);
+  });
+
+  it("trims the longest part when rounding runs over the slot", () => {
+    const snapped = snapToSteps([drill("w-kull", 8), drill("pa-triangle", 23), drill("g-3v3", 13), drill("sh-wrist", 18)], 60);
+    expect(minutesOf(snapped).every(isStep)).toBe(true);
+    expect(totalMinutes(snapped)).toBe(60);
+  });
+
+  it("leaves plans on the grid alone", () => {
+    const parts = [drill("w-kull", 5), drill("g-3v3", 20)];
+    expect(snapToSteps(parts, 60)).toBe(parts);
   });
 });
 
@@ -302,7 +359,8 @@ describe("share link", () => {
       parts: [
         { id: "a", type: "drill", drillId: "w-kull", minutes: 5 },
         { id: "g", type: "gather", minutes: 5 },
-        { id: "b", type: "drill", drillId: own.id, minutes: 35 }
+        { id: "b", type: "drill", drillId: own.id, minutes: 30 },
+        { id: "c", type: "closing", minutes: 5 }
       ],
       status: "planned",
       equipmentChecked: [],
@@ -315,11 +373,27 @@ describe("share link", () => {
     expect(decoded?.parts).toEqual([
       { type: "drill", drillId: "w-kull", minutes: 5 },
       { type: "gather", minutes: 5 },
-      { type: "drill", drillId: "own-1", minutes: 35 }
+      { type: "drill", drillId: "own-1", minutes: 30 },
+      { type: "closing", minutes: 5 }
     ]);
     expect(decoded?.drills.map((d) => d.id)).toEqual(["own-1"]);
     expect(decoded?.drills[0].diagram).toBeUndefined();
     expect(decoded?.drills[0].title).toBe("Min övning – åäö");
+  });
+
+  it("puts a link from the first app version on the 5-minute grid", () => {
+    const old = {
+      v: 1,
+      minutes: 60,
+      parts: [
+        { type: "drill", drillId: "w-kull", minutes: 8 },
+        { type: "drill", drillId: "pa-triangle", minutes: 42 },
+        { type: "drill", drillId: "g-3v3", minutes: 10 }
+      ],
+      drills: []
+    };
+    const b64 = btoa(JSON.stringify(old)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    expect(minutesOf(decodeShare(b64)!.parts)).toEqual([10, 40, 10]);
   });
 
   it("rejects garbage", () => {

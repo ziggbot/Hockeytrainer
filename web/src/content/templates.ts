@@ -2,7 +2,7 @@ import type { SessionTemplate } from "../domain/types";
 
 // Curated sessions in the club's standard shape: warm-up 5 → gathering 5 →
 // 4 stations with a free zone in the middle → (whole-group focus drill on
-// longer ice) → game. Templates list 3 skill stations; the planner adds the
+// longer ice) → game → closing talk. Templates list 3 skill stations; the planner adds the
 // small-goal match as station D and sets all minutes from the ice time.
 // Stations must be drills that fit half an end zone (area "station"/"third").
 

@@ -40,7 +40,7 @@ The preview routes in memory and has no service worker (the sandbox forbids it),
 | 1 | Auth and club setup | **Not started.** Needs the Supabase EU project. Teams are local for now. |
 | 2 | Curriculum editor | **Partial.** Blocks (name, weeks, 1–2 focus skills) and philosophy are editable per age group. No admin role, fixed age-group list. |
 | 3 | Drill library | **Done (content partial).** 41 own seed drills (spec target 50–100), filters, own drills with image upload. |
-| 4 | Session planner | **Done.** Club base: 5 min warm-up → 5 min gathering/station split → 4 stations (D is always a match against small goals) + free zone in the middle → focus drill (longer ice) → game, all in 5-minute steps. Curated templates first, else generated from block focus; varied across the week. |
+| 4 | Session planner | **Done.** Club base: 5 min warm-up → 5 min gathering/station split → 4 stations (D is always a match against small goals) + free zone in the middle → focus drill (longer ice) → game → closing talk (5 min, 10 from 75 min), all in 5-minute steps. Curated templates first, else generated from block focus; varied across the week. |
 | 5 | Equipment checklist | **Done.** Max across sequential parts, summed across parallel stations, tick-off. |
 | 6 | Rink mode | **Done.** Offline, timer, station view, wake lock. iOS wake-lock behaviour still to verify on a device (spec §9). |
 | 7 | Share link | **Interim.** Read-only snapshot in the URL fragment, no account. Becomes a live token link with the backend. |

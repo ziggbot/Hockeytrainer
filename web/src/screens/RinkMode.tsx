@@ -10,7 +10,7 @@ import { S, formatTime } from "../i18n";
 import { addNote, allDrills, setDone } from "../store/actions";
 import { useAppState } from "../store/store";
 import { readItem, removeItem, writeItem } from "../store/storage";
-import { NoteForm } from "./SessionScreen";
+import { NoteForm, talkLabel } from "./SessionScreen";
 
 // Rink mode (spec §5.6): the coach starts the practice once and the screen
 // follows the clock — the feed scrolls to the running part, the timeline on
@@ -171,9 +171,9 @@ export function RinkMode({ persistKey, parts, drillsById, plannedStart, onExit, 
   const title = (seg: Segment) =>
     seg.part.type === "drill"
       ? (drillsById.get(seg.part.drillId)?.title ?? S.ui.common.unknownDrill)
-      : seg.part.type === "gather"
-        ? S.ui.session.gather
-        : S.ui.session.stationsTitle;
+      : seg.part.type === "stations"
+        ? S.ui.session.stationsTitle
+        : talkLabel(seg.part).title;
 
   // The gathering shows where each group starts in the rotation that follows.
   const rotationAfter = (index: number) => {
@@ -273,7 +273,7 @@ export function RinkMode({ persistKey, parts, drillsById, plannedStart, onExit, 
                       />
                     ) : null;
                   })()
-                ) : (
+                ) : seg.part.type === "stations" ? (
                   <Stations
                     part={seg.part}
                     rotation={seg.index === pos.segment && pos.rotation !== null ? pos.rotation : 0}
@@ -283,7 +283,7 @@ export function RinkMode({ persistKey, parts, drillsById, plannedStart, onExit, 
                     mine={state.myStation}
                     onPick={(i) => save({ ...state, myStation: state.myStation === i ? null : i })}
                   />
-                )}
+                ) : null}
               </section>
             );
           })}

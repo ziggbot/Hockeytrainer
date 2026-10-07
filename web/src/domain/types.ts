@@ -92,6 +92,8 @@ export type SessionPart =
   | { id: string; type: "drill"; drillId: string; minutes: number }
   /** Everyone gathers, hears the plan and is split into station groups. */
   | { id: string; type: "gather"; minutes: number }
+  /** Closing talk at the end: what went well, what we take to next time. */
+  | { id: string; type: "closing"; minutes: number }
   | {
       id: string;
       type: "stations";
@@ -150,7 +152,8 @@ export type PartDraft = DistributiveOmit<SessionPart, "id">;
 
 /**
  * Curated session (spec §4 SessionTemplate) in the club's standard shape:
- * warm-up → gathering → 4-station rotation → whole-group drills → game.
+ * warm-up → gathering → 4-station rotation → whole-group drills → game →
+ * closing.
  * Minutes come from the slot length (planner `allocate`), not from the
  * template.
  */

@@ -23,8 +23,8 @@ Simple, clear and usable rink-side beats feature-rich. Keep to these patterns:
 
 ## Club's session shape (from the club, keep it)
 
-- The base of every suggested practice: **5 min warm-up** → **5 min gathering and station split** (part type `gather`) → **4 different stations** where the last one (D) is always **a match against small goals** (`g-smallgoals`) + **free zone in the middle** (neutral zone, for players who can't join the rotation). Then, with time left: whole-group focus drill on longer ice → game. Built by `allocate`/`assemble` in `web/src/domain/planner.ts`; templates in `web/src/content/templates.ts` list the 3 skill stations and the planner adds the match.
-- Every segment is a whole number of **5-minute blocks** (5, 10, 15, 20). Steppers move in 5s; seed drill lengths are multiples of 5.
+- The base of every suggested practice: **5 min warm-up** → **5 min gathering and station split** (part type `gather`) → **4 different stations** where the last one (D) is always **a match against small goals** (`g-smallgoals`) + **free zone in the middle** (neutral zone, for players who can't join the rotation). Then, with time left: whole-group focus drill on longer ice → game. Every practice ends with a **closing talk** (part type `closing`): 5 min, 10 from 75 min. 5 minutes left over go to the warm-up (10 min). Built by `allocate`/`assemble` in `web/src/domain/planner.ts`; templates in `web/src/content/templates.ts` list the 3 skill stations and the planner adds the match.
+- Every segment is a whole number of **5-minute blocks** (5, 10, 15, 20). Steppers move in 5s; seed drill lengths are multiples of 5. Plans from the first app version (e.g. a 42-minute drill) are snapped to the grid on start (`snapToSteps`, `snapOffGridPlans`), and so are share links.
 - Changing the planner's output shape: bump `PLAN_VERSION` so untouched upcoming plans are rebuilt on start.
 
 ## Non-negotiables

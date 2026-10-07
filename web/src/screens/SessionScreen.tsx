@@ -23,13 +23,14 @@ import {
 import { equipmentFor } from "../domain/equipment";
 import { MIN_PART_MINUTES, STEP, partMinutes, totalMinutes } from "../domain/planner";
 import { encodeShare } from "../domain/share";
-import { NOTE_TAGS, type Drill, type NoteTag, type Session, type SessionPart } from "../domain/types";
+import { NOTE_TAGS, type Drill, type NoteTag, type PartDraft, type Session, type SessionPart } from "../domain/types";
 import { S, formatDayShort, relativeDay, formatTime } from "../i18n";
 import {
   addNote,
   ageGroupOf,
   allDrills,
   deleteSession,
+  newClosing,
   newGather,
   newPart,
   replanSession,
@@ -146,8 +147,8 @@ export function SessionScreen() {
                 <li key={part.id}>
                   {part.type === "drill" ? (
                     <DrillRow drill={byId.get(part.drillId)} label={startsAt} sub={S.ui.common.minutes(part.minutes)} />
-                  ) : part.type === "gather" ? (
-                    <GatherRow label={startsAt} minutes={part.minutes} />
+                  ) : part.type === "gather" || part.type === "closing" ? (
+                    <TalkRow part={part} label={startsAt} />
                   ) : (
                     <div className="stations">
                       <div className="stations__head">
@@ -272,6 +273,11 @@ export function SessionScreen() {
               {!parts.some((p) => p.type === "gather") && (
                 <button type="button" className="btn" onClick={() => edit(insertGather(parts, newGather()))}>
                   + {t.addGather}
+                </button>
+              )}
+              {!parts.some((p) => p.type === "closing") && (
+                <button type="button" className="btn" onClick={() => edit([...parts, newClosing()])}>
+                  + {t.addClosing}
                 </button>
               )}
               <ConfirmButton
@@ -414,26 +420,31 @@ export function DrillRow({
   );
 }
 
-/** Everyone gathers before the rotation and is split into station groups. */
-export function GatherRow({ label, minutes }: { label?: string; minutes: number }) {
+type TalkPart = Extract<SessionPart | PartDraft, { type: "gather" | "closing" }>;
+
+/** Icon and title of a part where the whole group gathers around the coach. */
+export const talkLabel = (part: TalkPart) =>
+  part.type === "gather" ? { icon: "📣", title: t.gather } : { icon: "🏁", title: t.closing };
+
+/** Gathering before the rotation, or the closing talk at the end. */
+export function TalkRow({ part, label }: { part: TalkPart; label?: string }) {
+  const { icon, title } = talkLabel(part);
   return (
     <div className={`row${label === undefined ? " row--compact" : ""}`}>
-      <span className="row__icon">{GATHER_ICON}</span>
+      <span className="row__icon">{icon}</span>
       {label !== undefined && (
         <span className="row__day" style={{ fontSize: 24 }}>
           {label}
         </span>
       )}
       <span className="row__main">
-        <div className="row__title">{t.gather}</div>
-        <div className="row__sub">{S.ui.common.minutes(minutes)}</div>
+        <div className="row__title">{title}</div>
+        <div className="row__sub">{S.ui.common.minutes(part.minutes)}</div>
       </span>
       <span />
     </div>
   );
 }
-
-export const GATHER_ICON = "📣";
 
 /** The open area in the neutral zone during a rotation. */
 export function FreeZoneRow() {

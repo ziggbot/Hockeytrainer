@@ -9,7 +9,7 @@ import { decodeShare } from "../domain/share";
 import { stationLetter } from "../domain/editParts";
 import { S, formatDayLong, formatTime } from "../i18n";
 import { RinkMode } from "./RinkMode";
-import { GATHER_ICON, PlanTotal } from "./SessionScreen";
+import { PlanTotal, talkLabel } from "./SessionScreen";
 
 const t = S.ui.shared;
 
@@ -104,9 +104,9 @@ export function SharedSession() {
                     ? S.ui.session.stations(part.drillIds.length, part.minutesPerStation)
                     : S.ui.common.minutes(part.minutes)}
                 </div>
-                {part.type === "gather" && (
+                {(part.type === "gather" || part.type === "closing") && (
                   <div className="row__title" style={{ marginTop: 6 }}>
-                    {GATHER_ICON} {S.ui.session.gather}
+                    {talkLabel(part).icon} {talkLabel(part).title}
                   </div>
                 )}
                 {ids.map((id, s) => {

@@ -9,7 +9,15 @@ import type {
   Team,
   TrainingTime
 } from "../domain/types";
-import { GATHER_MINUTES, PLAN_VERSION, drillIdsOf, roundToStep, suggestPlan } from "../domain/planner";
+import {
+  CLOSING_MINUTES,
+  GATHER_MINUTES,
+  PLAN_VERSION,
+  drillIdsOf,
+  roundToStep,
+  snapToSteps,
+  suggestPlan
+} from "../domain/planner";
 import { currentBlock } from "../domain/curriculum";
 import { parseISODate } from "../domain/dates";
 import { AGE_GROUPS } from "../content/curricula";
@@ -200,6 +208,21 @@ export function refreshUntouchedPlans(today: string) {
   }
 }
 
+/**
+ * Plans the coach kept (edited, done or past) are not rebuilt, but none may
+ * keep off-grid minutes from the first app version (e.g. a 42-minute drill).
+ * Not an edit by the coach, so `updatedAt` stays.
+ */
+export function snapOffGridPlans() {
+  const offGrid = getState().sessions.filter((x) => snapToSteps(x.parts, x.minutes) !== x.parts);
+  if (offGrid.length === 0) return;
+  const ids = new Set(offGrid.map((x) => x.id));
+  setState((s) => ({
+    ...s,
+    sessions: s.sessions.map((x) => (ids.has(x.id) ? { ...x, parts: snapToSteps(x.parts, x.minutes) } : x))
+  }));
+}
+
 export function updateSession(id: string, patch: Partial<Omit<Session, "id" | "teamId" | "createdAt">>) {
   setState((s) => ({
     ...s,
@@ -238,6 +261,10 @@ export function newPart(drill: Drill): SessionPart {
 
 export function newGather(): SessionPart {
   return { id: newId(), type: "gather", minutes: GATHER_MINUTES };
+}
+
+export function newClosing(): SessionPart {
+  return { id: newId(), type: "closing", minutes: CLOSING_MINUTES };
 }
 
 // ── Notes (append-only) ────────────────────────────────────────

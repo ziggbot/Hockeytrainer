@@ -1,0 +1,233 @@
+import { useRef, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { BackBar } from "../components/Chrome";
+import { Stepper } from "../components/Stepper";
+import { AGE_GROUPS } from "../content/curricula";
+import type { Team, TrainingTime } from "../domain/types";
+import { S } from "../i18n";
+import { activeTeam, deleteTeam, newTrainingTime, setActiveTeam, updateTeam } from "../store/actions";
+import { getState, replaceState, useAppState, type AppState } from "../store/store";
+
+const t = S.ui.team;
+
+/** Team settings ("Mer"): name, age group, ice times, teams, backup. */
+export function TeamSettings() {
+  const state = useAppState();
+  const team = activeTeam(state);
+  const navigate = useNavigate();
+  if (!team) return <Navigate to="/" replace />;
+
+  const patch = (p: Partial<Team>) => updateTeam({ ...team, ...p });
+  const patchTime = (id: string, p: Partial<TrainingTime>) =>
+    patch({ schedule: team.schedule.map((x) => (x.id === id ? { ...x, ...p } : x)) });
+
+  return (
+    <main className="page page--bare">
+      <BackBar to="/" />
+      <h1 className="title">{t.title}</h1>
+
+      <label className="field">
+        <span className="field__label">{t.name}</span>
+        <input
+          className="input"
+          value={team.name}
+          placeholder={t.namePlaceholder}
+          onChange={(e) => patch({ name: e.target.value })}
+        />
+      </label>
+
+      <div className="field">
+        <span className="field__label">{t.ageGroup}</span>
+        <div className="chips" style={{ marginTop: 4 }}>
+          {AGE_GROUPS.map((a) => (
+            <button
+              key={a.id}
+              type="button"
+              className={`chip chip--sm${a.id === team.ageGroupId ? " chip--on" : ""}`}
+              aria-pressed={a.id === team.ageGroupId}
+              onClick={() => patch({ ageGroupId: a.id })}
+            >
+              {a.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="field">
+        <span className="field__label">{t.players}</span>
+        <Stepper value={team.playerCount} onChange={(v) => patch({ playerCount: v })} min={2} max={40} label={t.players} />
+        <span className="field__hint">{t.playersHint}</span>
+      </div>
+
+      <section className="section">
+        <div className="section__head">
+          <h2>{t.times}</h2>
+          <span className="section__note">{t.timesNote}</span>
+        </div>
+        <ul className="rows">
+          {[...team.schedule]
+            .sort((a, b) => a.weekday - b.weekday || a.start.localeCompare(b.start))
+            .map((time) => (
+              <li key={time.id} style={{ padding: "12px 0", borderBottom: "1.5px dashed var(--line)" }}>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                  <select
+                    className="input input--sm"
+                    aria-label={t.day}
+                    value={time.weekday}
+                    onChange={(e) => patchTime(time.id, { weekday: Number(e.target.value) })}
+                  >
+                    {S.weekdays.map((d, i) => (
+                      <option key={d} value={i + 1}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    className="input input--sm"
+                    type="time"
+                    aria-label={t.start}
+                    value={time.start}
+                    onChange={(e) => e.target.value && patchTime(time.id, { start: e.target.value })}
+                  />
+                  <Stepper
+                    value={time.minutes}
+                    onChange={(v) => patchTime(time.id, { minutes: v })}
+                    min={15}
+                    max={180}
+                    step={5}
+                    label={t.length}
+                    format={S.ui.common.minutes}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn--icon"
+                    aria-label={S.ui.common.delete}
+                    onClick={() => patch({ schedule: team.schedule.filter((x) => x.id !== time.id) })}
+                  >
+                    ✕
+                  </button>
+                </div>
+              </li>
+            ))}
+        </ul>
+        <button
+          type="button"
+          className="btn"
+          style={{ marginTop: 12 }}
+          onClick={() => {
+            const last = team.schedule[team.schedule.length - 1];
+            patch({
+              schedule: [
+                ...team.schedule,
+                newTrainingTime(last ? (last.weekday % 7) + 1 : 2, last?.start ?? "18:00", last?.minutes ?? 60)
+              ]
+            });
+          }}
+        >
+          + {t.addTime}
+        </button>
+      </section>
+
+      <section className="section">
+        <div className="section__head">
+          <h2>{t.otherTeams}</h2>
+        </div>
+        <ul className="rows">
+          {state.teams.map((x) => (
+            <li key={x.id} className="row row--compact">
+              <span className="row__icon">🏒</span>
+              <span className="row__main">
+                <div className="row__title">{x.name}</div>
+                <div className="row__sub">{AGE_GROUPS.find((a) => a.id === x.ageGroupId)?.name}</div>
+              </span>
+              {x.id === team.id ? (
+                <span className="tag">{t.active}</span>
+              ) : (
+                <button type="button" className="btn btn--icon" onClick={() => setActiveTeam(x.id)}>
+                  {t.switchTo}
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+        <button type="button" className="btn" style={{ marginTop: 12 }} onClick={() => navigate("/nytt-lag")}>
+          + {t.newTeam}
+        </button>
+      </section>
+
+      <DataSection />
+
+      <button
+        type="button"
+        className="link link--danger"
+        style={{ marginTop: 28 }}
+        onClick={() => {
+          if (window.confirm(S.ui.common.confirmDelete)) {
+            deleteTeam(team.id);
+            navigate("/", { replace: true });
+          }
+        }}
+      >
+        {t.deleteTeam}
+      </button>
+    </main>
+  );
+}
+
+function DataSection() {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const exportBackup = () => {
+    const blob = new Blob([JSON.stringify(getState(), null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tranarappen-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importBackup = async (file: File) => {
+    try {
+      const data = JSON.parse(await file.text()) as AppState;
+      if (data.version !== 1 || !Array.isArray(data.teams) || !Array.isArray(data.sessions)) throw new Error("format");
+      if (!window.confirm(t.importConfirm)) return;
+      replaceState(data);
+      setMessage(t.importDone);
+    } catch {
+      setMessage(t.importFailed);
+    }
+  };
+
+  return (
+    <section className="section">
+      <div className="section__head">
+        <h2>{t.data}</h2>
+      </div>
+      <p className="sub" style={{ marginTop: 10 }}>
+        {t.dataNote}
+      </p>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 12 }}>
+        <button type="button" className="btn" onClick={exportBackup}>
+          ↓ {t.export}
+        </button>
+        <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
+          ↑ {t.import}
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="application/json,.json"
+          hidden
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) importBackup(file);
+            e.target.value = "";
+          }}
+        />
+      </div>
+      {message && <p className="notice">{message}</p>}
+    </section>
+  );
+}

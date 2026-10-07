@@ -1,0 +1,27 @@
+# Render blueprint for the Tränarappen web PWA.
+#
+# Render → New → Blueprint → connect this repo. The app lives in web/, so
+# rootDir points there and the published output is web/dist. No env vars
+# are needed until the Supabase backend is wired in.
+
+services:
+  - type: web
+    name: tranarappen-web
+    runtime: static
+    rootDir: web
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+    # SPA fallback: unmatched paths serve index.html so React Router handles
+    # /pass/*, /ovningar/*, /delat etc. Real files take precedence.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    # Don't let browsers hold a stale service worker.
+    headers:
+      - path: /sw.js
+        name: Cache-Control
+        value: "no-cache"

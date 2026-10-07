@@ -14,7 +14,7 @@ npm test           # unit tests
 npm run build      # typecheck + production build (PWA with offline precache)
 ```
 
-To deploy as a static site, use `render.yaml` (Render blueprint) or `web/vercel.json`. No environment variables are needed yet.
+**Live app (Render, deploys from `claude/kind-gauss-8r4pib`):** https://tranarappen-web.onrender.com/ — set up from `render.yaml` (a `web/vercel.json` also exists). No environment variables are needed yet.
 
 **Preview on claude.ai (private):** https://claude.ai/artifact/UgPj73QSapgQk8geGaoRii. It is built as one self-contained HTML file:
 

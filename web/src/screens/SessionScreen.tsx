@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { BackBar, BottomNav } from "../components/Chrome";
 import { Check } from "../components/Check";
+import { ConfirmButton } from "../components/ConfirmButton";
 import { DrillPicker } from "../components/DrillPicker";
 import { Stepper } from "../components/Stepper";
 import { currentBlock } from "../domain/curriculum";
@@ -34,6 +35,7 @@ import {
   toggleEquipment
 } from "../store/actions";
 import { useAppState } from "../store/store";
+import { shareUrl } from "../platform";
 
 const t = S.ui.session;
 
@@ -46,6 +48,7 @@ export function SessionScreen() {
   const [editing, setEditing] = useState(false);
   const [picker, setPicker] = useState<PickerTarget | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [shareFallback, setShareFallback] = useState<string | null>(null);
   const drills = useMemo(() => allDrills(state), [state]);
   const byId = useMemo(() => new Map(drills.map((d) => [d.id, d])), [drills]);
 
@@ -79,7 +82,8 @@ export function SessionScreen() {
   };
 
   const share = async () => {
-    const url = `${window.location.origin}/delat#${encodeShare(session, team.name, byId)}`;
+    const url = shareUrl(encodeShare(session, team.name, byId));
+    setShareFallback(null);
     if (navigator.share) {
       try {
         await navigator.share({ title: session.title, text: t.shareText(session.title), url });
@@ -93,7 +97,8 @@ export function SessionScreen() {
       setToast(t.copied);
       window.setTimeout(() => setToast(null), 2500);
     } catch {
-      window.prompt(t.share, url);
+      // Clipboard refused (some app views): show the link to copy by hand.
+      setShareFallback(url);
     }
   };
 
@@ -251,15 +256,11 @@ export function SessionScreen() {
               <button type="button" className="btn" onClick={() => setPicker({ mode: "add" })}>
                 + {t.addDrill}
               </button>
-              <button
-                type="button"
-                className="btn"
-                onClick={() => {
-                  if (window.confirm(t.newSuggestionConfirm)) replanSession(session.id);
-                }}
-              >
-                ↻ {t.newSuggestion}
-              </button>
+              <ConfirmButton
+                label={`↻ ${t.newSuggestion}`}
+                confirmLabel={t.newSuggestionConfirm}
+                onConfirm={() => replanSession(session.id)}
+              />
             </div>
           )}
         </section>
@@ -306,19 +307,26 @@ export function SessionScreen() {
             </button>
           </div>
           {toast && <p className="notice">{toast}</p>}
-          <button
-            type="button"
+          {shareFallback && (
+            <input
+              className="input"
+              readOnly
+              aria-label={t.share}
+              value={shareFallback}
+              onFocus={(e) => e.target.select()}
+              style={{ marginTop: 12, fontSize: 15 }}
+            />
+          )}
+          <ConfirmButton
             className="link link--danger"
-            style={{ marginTop: 18 }}
-            onClick={() => {
-              if (window.confirm(S.ui.common.confirmDelete)) {
-                deleteSession(session.id);
-                navigate("/");
-              }
+            style={{ marginTop: 18, display: "block" }}
+            label={t.deleteSession}
+            confirmLabel={S.ui.common.tapAgainDelete}
+            onConfirm={() => {
+              deleteSession(session.id);
+              navigate("/");
             }}
-          >
-            {t.deleteSession}
-          </button>
+          />
         </section>
       </main>
       <BottomNav />

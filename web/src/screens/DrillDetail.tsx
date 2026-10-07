@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { BackBar, BottomNav } from "../components/Chrome";
+import { ConfirmButton } from "../components/ConfirmButton";
 import { RinkDiagram } from "../components/RinkDiagram";
 import { Sheet } from "../components/Sheet";
 import { upcomingSlots } from "../domain/schedule";
@@ -109,18 +110,15 @@ export function DrillDetail() {
             <Link to={`/ovningar/${drill.id}/andra`} className="link">
               {t.editOwn}
             </Link>
-            <button
-              type="button"
+            <ConfirmButton
               className="link link--danger"
-              onClick={() => {
-                if (window.confirm(S.ui.common.confirmDelete)) {
-                  deleteOwnDrill(drill.id);
-                  navigate("/ovningar", { replace: true });
-                }
+              label={t.deleteOwn}
+              confirmLabel={S.ui.common.tapAgainDelete}
+              onConfirm={() => {
+                deleteOwnDrill(drill.id);
+                navigate("/ovningar", { replace: true });
               }}
-            >
-              {t.deleteOwn}
-            </button>
+            />
           </div>
         )}
       </main>

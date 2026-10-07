@@ -5,6 +5,7 @@ import { stationLetter } from "../domain/editParts";
 import { S } from "../i18n";
 import { addNote, allDrills, setDone } from "../store/actions";
 import { useAppState } from "../store/store";
+import { readItem, removeItem, writeItem } from "../store/storage";
 import { NoteForm } from "./SessionScreen";
 
 // Rink mode (spec §5.6): full-screen running order, big type, one timer per
@@ -46,7 +47,7 @@ const storageKey = (key: string) => `hockeytrainer.rink.${key}`;
 
 function loadTimer(key: string): TimerState {
   try {
-    const raw = localStorage.getItem(storageKey(key));
+    const raw = readItem(storageKey(key));
     if (raw) return JSON.parse(raw) as TimerState;
   } catch {
     /* fall through */
@@ -135,11 +136,7 @@ export function RinkMode({ persistKey, parts, drillsById, onExit, onFinish }: Pr
 
   const setTimer = (next: TimerState) => {
     setTimerState(next);
-    try {
-      localStorage.setItem(storageKey(persistKey), JSON.stringify(next));
-    } catch {
-      /* ignore */
-    }
+    writeItem(storageKey(persistKey), JSON.stringify(next));
   };
 
   const stepIndex = Math.min(timer.step, steps.length);
@@ -199,7 +196,7 @@ export function RinkMode({ persistKey, parts, drillsById, onExit, onFinish }: Pr
                 type="button"
                 className="cta"
                 onClick={() => {
-                  localStorage.removeItem(storageKey(persistKey));
+                  removeItem(storageKey(persistKey));
                   onFinish(text, tags);
                 }}
               >
@@ -211,7 +208,7 @@ export function RinkMode({ persistKey, parts, drillsById, onExit, onFinish }: Pr
               type="button"
               className="cta"
               onClick={() => {
-                localStorage.removeItem(storageKey(persistKey));
+                removeItem(storageKey(persistKey));
                 exit();
               }}
             >

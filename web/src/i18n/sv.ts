@@ -91,7 +91,8 @@ export const sv = {
       week: (w: number) => `v. ${w}`,
       weeks: (a: number, b: number) => `v. ${a}–${b}`,
       unknownDrill: "Övningen finns inte längre",
-      confirmDelete: "Säker? Det går inte att ångra."
+      tapAgain: "Säker? Tryck igen",
+      tapAgainDelete: "Tryck igen för att ta bort"
     },
     nav: {
       season: "Säsong",
@@ -145,7 +146,7 @@ export const sv = {
       addDrill: "Lägg till övning",
       addStation: "Lägg till station",
       newSuggestion: "Nytt förslag",
-      newSuggestionConfirm: "Ersätta upplägget med ett nytt förslag?",
+      newSuggestionConfirm: "Ersätt upplägget? Tryck igen",
       equipment: "Utrustning",
       equipmentNote: "bocka av i hallen",
       noEquipment: "Ingen särskild utrustning behövs.",
@@ -281,7 +282,8 @@ export const sv = {
       import: "Läs in säkerhetskopia",
       importDone: "Säkerhetskopian är inläst.",
       importFailed: "Filen kunde inte läsas.",
-      importConfirm: "Ersätta allt på den här enheten med säkerhetskopian?"
+      importConfirm: "Ersätta allt på den här enheten med säkerhetskopian?",
+      importReplace: "Ja, ersätt allt"
     },
     onboarding: {
       hello: "Hej tränare.",

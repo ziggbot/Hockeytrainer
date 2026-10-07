@@ -234,6 +234,16 @@ a {
   box-shadow: 0 1px 0 var(--ink);
 }
 
+/* Armed two-tap confirmation (ConfirmButton) */
+.btn--armed {
+  background: var(--yellow);
+}
+
+.link.btn--armed {
+  background: none;
+  font-weight: 700;
+}
+
 .btn:disabled {
   opacity: 0.4;
   pointer-events: none;

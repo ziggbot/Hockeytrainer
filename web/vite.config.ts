@@ -2,10 +2,14 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-export default defineConfig({
+// `--mode artifact` builds the claude.ai preview (scripts/build-artifact.mjs):
+// no service worker (the sandbox forbids it) and every asset inlined, so the
+// result can be folded into one HTML file.
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     VitePWA({
+      disable: mode === "artifact",
       registerType: "autoUpdate",
       includeAssets: ["icon.svg", "apple-touch-icon.png"],
       manifest: {
@@ -33,5 +37,8 @@ export default defineConfig({
       }
     })
   ],
-  server: { port: 5173, host: true }
-});
+  server: { port: 5173, host: true },
+  ...(mode === "artifact" && {
+    build: { outDir: "dist-artifact", assetsInlineLimit: Number.MAX_SAFE_INTEGER, cssCodeSplit: false }
+  })
+}));

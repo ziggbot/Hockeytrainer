@@ -1,5 +1,7 @@
 import { useEffect } from "react";
-import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter, MemoryRouter, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { decodeShare } from "./domain/share";
+import { IS_ARTIFACT } from "./platform";
 import { DrillDetail } from "./screens/DrillDetail";
 import { DrillEditor } from "./screens/DrillEditor";
 import { DrillLibrary } from "./screens/DrillLibrary";
@@ -22,9 +24,18 @@ function NewTeam() {
   return <Onboarding showBack onDone={() => navigate("/", { replace: true })} />;
 }
 
+/**
+ * The preview can't own its URL path, so it routes in memory. A share link
+ * to the preview is its own URL + #payload: open that shared session.
+ */
+function previewEntries(): string[] {
+  const token = window.location.hash.slice(1);
+  return token && decodeShare(token) ? [`/delat#${token}`] : ["/"];
+}
+
 export function App() {
-  return (
-    <BrowserRouter>
+  const routes = (
+    <>
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -40,6 +51,11 @@ export function App() {
         <Route path="/delat" element={<SharedSession />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </>
+  );
+  return IS_ARTIFACT ? (
+    <MemoryRouter initialEntries={previewEntries()}>{routes}</MemoryRouter>
+  ) : (
+    <BrowserRouter>{routes}</BrowserRouter>
   );
 }

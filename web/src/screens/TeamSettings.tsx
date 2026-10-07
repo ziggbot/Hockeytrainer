@@ -1,10 +1,12 @@
 import { useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { BackBar } from "../components/Chrome";
+import { ConfirmButton } from "../components/ConfirmButton";
 import { Stepper } from "../components/Stepper";
 import { AGE_GROUPS } from "../content/curricula";
 import type { Team, TrainingTime } from "../domain/types";
 import { S } from "../i18n";
+import { IS_ARTIFACT } from "../platform";
 import { activeTeam, deleteTeam, newTrainingTime, setActiveTeam, updateTeam } from "../store/actions";
 import { getState, replaceState, useAppState, type AppState } from "../store/store";
 
@@ -157,19 +159,16 @@ export function TeamSettings() {
 
       <DataSection />
 
-      <button
-        type="button"
+      <ConfirmButton
         className="link link--danger"
-        style={{ marginTop: 28 }}
-        onClick={() => {
-          if (window.confirm(S.ui.common.confirmDelete)) {
-            deleteTeam(team.id);
-            navigate("/", { replace: true });
-          }
+        style={{ marginTop: 28, display: "block" }}
+        label={t.deleteTeam}
+        confirmLabel={S.ui.common.tapAgainDelete}
+        onConfirm={() => {
+          deleteTeam(team.id);
+          navigate("/", { replace: true });
         }}
-      >
-        {t.deleteTeam}
-      </button>
+      />
     </main>
   );
 }
@@ -177,6 +176,7 @@ export function TeamSettings() {
 function DataSection() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [pending, setPending] = useState<AppState | null>(null);
 
   const exportBackup = () => {
     const blob = new Blob([JSON.stringify(getState(), null, 2)], { type: "application/json" });
@@ -192,9 +192,8 @@ function DataSection() {
     try {
       const data = JSON.parse(await file.text()) as AppState;
       if (data.version !== 1 || !Array.isArray(data.teams) || !Array.isArray(data.sessions)) throw new Error("format");
-      if (!window.confirm(t.importConfirm)) return;
-      replaceState(data);
-      setMessage(t.importDone);
+      setMessage(null);
+      setPending(data);
     } catch {
       setMessage(t.importFailed);
     }
@@ -209,9 +208,12 @@ function DataSection() {
         {t.dataNote}
       </p>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 12 }}>
-        <button type="button" className="btn" onClick={exportBackup}>
-          ↓ {t.export}
-        </button>
+        {/* The claude.ai preview frame blocks downloads. */}
+        {!IS_ARTIFACT && (
+          <button type="button" className="btn" onClick={exportBackup}>
+            ↓ {t.export}
+          </button>
+        )}
         <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
           ↑ {t.import}
         </button>
@@ -227,6 +229,27 @@ function DataSection() {
           }}
         />
       </div>
+      {pending && (
+        <div className="notice notice--warn">
+          <p style={{ margin: "0 0 10px" }}>{t.importConfirm}</p>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => {
+                replaceState(pending);
+                setPending(null);
+                setMessage(t.importDone);
+              }}
+            >
+              {t.importReplace}
+            </button>
+            <button type="button" className="btn" onClick={() => setPending(null)}>
+              {S.ui.common.cancel}
+            </button>
+          </div>
+        </div>
+      )}
       {message && <p className="notice">{message}</p>}
     </section>
   );

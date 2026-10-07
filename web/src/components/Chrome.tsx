@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
 import { LogoMark } from "./Icons";
 import { S } from "../i18n";
@@ -27,13 +27,12 @@ export function TopBar() {
 
 export function BackBar({ to, right }: { to?: string; right?: ReactNode }) {
   const navigate = useNavigate();
+  // "default" = this is the first entry (opened directly), so there is no
+  // in-app history to go back to.
+  const first = useLocation().key === "default";
   return (
     <header className="topbar">
-      <button
-        type="button"
-        className="back"
-        onClick={() => (to ? navigate(to) : window.history.length > 1 ? navigate(-1) : navigate("/"))}
-      >
+      <button type="button" className="back" onClick={() => (to ? navigate(to) : first ? navigate("/") : navigate(-1))}>
         ← {S.ui.common.back}
       </button>
       {right}

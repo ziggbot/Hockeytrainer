@@ -16,6 +16,14 @@ npm run build      # typecheck + production build (PWA with offline precache)
 
 To deploy as a static site, use `render.yaml` (Render blueprint) or `web/vercel.json`. No environment variables are needed yet.
 
+**Preview on claude.ai (private):** https://claude.ai/artifact/UgPj73QSapgQk8geGaoRii. It is built as one self-contained HTML file:
+
+```bash
+VITE_SHARE_BASE=https://claude.ai/artifact/UgPj73QSapgQk8geGaoRii npm run build:artifact   # → web/dist-artifact/tranarappen.html
+```
+
+The preview routes in memory and has no service worker (the sandbox forbids it), so offline mode, "Add to Home Screen" and the backup download only work on a real deployment. Data is saved in the viewer's browser.
+
 ## How it works
 
 1. **First run:** team name, age group (U8–Junior), training days and ice time.

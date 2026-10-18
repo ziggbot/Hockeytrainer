@@ -23,7 +23,15 @@ import {
 import { equipmentFor } from "../domain/equipment";
 import { MIN_PART_MINUTES, STEP, partMinutes, totalMinutes } from "../domain/planner";
 import { encodeShare } from "../domain/share";
-import { NOTE_TAGS, type Drill, type NoteTag, type PartDraft, type Session, type SessionPart } from "../domain/types";
+import {
+  NOTE_TAGS,
+  type Drill,
+  type EquipmentItem,
+  type NoteTag,
+  type PartDraft,
+  type Session,
+  type SessionPart
+} from "../domain/types";
 import { S, formatDayShort, relativeDay, formatTime } from "../i18n";
 import {
   addNote,
@@ -366,14 +374,17 @@ export function SessionScreen() {
   );
 }
 
-export const EQUIPMENT_ICONS: Record<string, string> = {
+export const EQUIPMENT_ICONS: Record<EquipmentItem, string> = {
   pucks: "⚫",
+  balls: "⚪",
   cones: "🔺",
   pinnies: "🎽",
   smallNets: "🥅",
   goals: "🥅",
   tires: "⭕",
-  sticksOnIce: "🏒"
+  sticksOnIce: "🏒",
+  boards: "🧱",
+  ladder: "🪜"
 };
 
 export function DrillRow({

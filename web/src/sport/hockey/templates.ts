@@ -1,4 +1,4 @@
-import type { SessionTemplate } from "../domain/types";
+import type { SessionTemplate } from "../../domain/types";
 
 // Curated sessions in the club's standard shape: warm-up 5 → gathering 5 →
 // 4 stations with a free zone in the middle → (whole-group focus drill on

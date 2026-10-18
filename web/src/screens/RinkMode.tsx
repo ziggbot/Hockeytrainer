@@ -9,6 +9,7 @@ import type { Drill, NoteTag, PartDraft, SessionPart } from "../domain/types";
 import { S, formatTime } from "../i18n";
 import { addNote, allDrills, setDone } from "../store/actions";
 import { useAppState } from "../store/store";
+import { SPORT } from "../sport";
 import { readItem, removeItem, writeItem } from "../store/storage";
 import { NoteForm, talkLabel } from "./SessionScreen";
 
@@ -30,7 +31,7 @@ interface RinkState {
   myStation: number | null;
 }
 
-const storageKey = (key: string) => `hockeytrainer.rink2.${key}`;
+const storageKey = (key: string) => `${SPORT.storagePrefix}.rink2.${key}`;
 
 function loadState(key: string): RinkState {
   try {

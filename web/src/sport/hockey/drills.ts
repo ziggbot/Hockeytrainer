@@ -1,4 +1,4 @@
-import type { Drill, EquipmentNeed } from "../domain/types";
+import type { Drill, EquipmentNeed } from "../../domain/types";
 
 // Seed drill library. Own content only (spec §5.3: no copying federation
 // material). Written as a starting point — every drill should be read

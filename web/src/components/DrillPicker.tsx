@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import type { AgeGroup, Drill, Skill } from "../domain/types";
-import { SKILLS } from "../domain/types";
 import { ageOverlaps } from "../domain/curriculum";
 import { S } from "../i18n";
 import { Sheet } from "./Sheet";
+import { SPORT } from "../sport";
 
 interface Props {
   title: string;
@@ -47,7 +47,7 @@ export function DrillPicker({ title, drills, ageGroup, onPick, onClose }: Props)
         <button type="button" className={`chip chip--sm${onlyAge ? " chip--on" : ""}`} onClick={() => setOnlyAge(!onlyAge)}>
           {S.ui.library.onlyAge(ageGroup.name)}
         </button>
-        {SKILLS.map((s) => (
+        {SPORT.skills.map((s) => (
           <button
             key={s}
             type="button"

@@ -1,5 +1,4 @@
-import { ICE_AREAS, SKILLS, type Drill, type PartDraft, type Session, type Skill } from "./types";
-import { EQUIPMENT_ORDER } from "./equipment";
+import { ALL_AREAS, ALL_EQUIPMENT, ALL_SKILLS, type Drill, type PartDraft, type Session, type Skill } from "./types";
 import { drillIdsOf, snapToSteps } from "./planner";
 
 // Read-only share link (spec §5.7) without a backend: the session snapshot
@@ -93,10 +92,10 @@ function cleanDrill(d: unknown): Drill | null {
           .filter((x): x is string => !!x)
           .slice(0, 12)
       : [];
-  const skills = (Array.isArray(o.skills) ? o.skills : []).map((x) => oneOf(x, SKILLS)).filter((x): x is Skill => !!x);
+  const skills = (Array.isArray(o.skills) ? o.skills : []).map((x) => oneOf(x, ALL_SKILLS)).filter((x): x is Skill => !!x);
   const equipment = (Array.isArray(o.equipment) ? o.equipment : [])
     .map((e) => {
-      const item = oneOf((e as Record<string, unknown>)?.item, EQUIPMENT_ORDER);
+      const item = oneOf((e as Record<string, unknown>)?.item, ALL_EQUIPMENT);
       const raw = (e as Record<string, unknown>)?.count;
       const count = raw === "perPlayer" || raw === "perPair" ? raw : num(raw);
       return item && count !== null ? { item, count } : null;
@@ -112,7 +111,7 @@ function cleanDrill(d: unknown): Drill | null {
     ageMin: num(o.ageMin) ?? 5,
     ageMax: num(o.ageMax) ?? 20,
     minutes: num(o.minutes) ?? 5,
-    iceArea: oneOf(o.iceArea, ICE_AREAS) ?? "half",
+    iceArea: oneOf(o.iceArea, ALL_AREAS) ?? "half",
     minPlayers: num(o.minPlayers) ?? 1,
     equipment,
     visibility: "private",

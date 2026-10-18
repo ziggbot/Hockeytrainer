@@ -1,4 +1,4 @@
-import type { IceArea } from "../domain/types";
+import type { Area } from "../domain/types";
 import { S } from "../i18n";
 
 // Schematic rink (60 × 30 m, IIHF proportions, approximate) with the part
@@ -7,14 +7,14 @@ import { S } from "../i18n";
 const W = 200;
 const H = 100;
 
-const AREAS: Record<IceArea, { x: number; y: number; w: number; h: number }> = {
+const AREAS: Record<Area, { x: number; y: number; w: number; h: number }> = {
   full: { x: 0, y: 0, w: W, h: H },
   half: { x: 0, y: 0, w: W / 2, h: H },
   third: { x: 0, y: 0, w: 76, h: H },
   station: { x: 0, y: 0, w: 76, h: H / 2 }
 };
 
-export function RinkDiagram({ area, width = 120 }: { area: IceArea; width?: number }) {
+export function RinkDiagram({ area, width = 120 }: { area: Area; width?: number }) {
   const a = AREAS[area];
   return (
     <svg

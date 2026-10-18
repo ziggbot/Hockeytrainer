@@ -9,29 +9,19 @@ import type {
   Team,
   TrainingTime
 } from "../domain/types";
-import {
-  CLOSING_MINUTES,
-  GATHER_MINUTES,
-  PLAN_VERSION,
-  drillIdsOf,
-  roundToStep,
-  snapToSteps,
-  suggestPlan
-} from "../domain/planner";
+import { CLOSING_MINUTES, PLAN_VERSION, drillIdsOf, roundToStep, snapToSteps, suggestPlan } from "../domain/planner";
 import { currentBlock } from "../domain/curriculum";
 import { parseISODate } from "../domain/dates";
-import { AGE_GROUPS } from "../content/curricula";
-import { SEED_DRILLS } from "../content/drills";
-import { SEED_TEMPLATES } from "../content/templates";
+import { SPORT } from "../sport";
 import { focusTitle } from "../i18n";
 import { MAX_COACH_NAME, getState, newId, nowIso, setState, type AppState } from "./store";
 
 export function allDrills(s: AppState = getState()): Drill[] {
-  return [...SEED_DRILLS, ...s.ownDrills];
+  return [...SPORT.drills, ...s.ownDrills];
 }
 
 export function ageGroupOf(team: Team) {
-  return AGE_GROUPS.find((a) => a.id === team.ageGroupId) ?? AGE_GROUPS[0];
+  return SPORT.ageGroups.find((a) => a.id === team.ageGroupId) ?? SPORT.ageGroups[0];
 }
 
 export function curriculumOf(team: Team, s: AppState = getState()) {
@@ -114,7 +104,7 @@ function suggestionFor(team: Team, date: string, minutes: number, variant: numbe
     targetSkills: curriculum?.targetSkills ?? [],
     minutes,
     drills: allDrills(s),
-    templates: [...s.ownTemplates, ...SEED_TEMPLATES]
+    templates: [...s.ownTemplates, ...SPORT.templates]
   };
   let chosen = { ...suggestPlan({ ...ctx, variant }), variant };
   for (let v = variant; v < variant + 8; v++) {
@@ -264,7 +254,7 @@ export function newPart(drill: Drill): SessionPart {
 }
 
 export function newGather(): SessionPart {
-  return { id: newId(), type: "gather", minutes: GATHER_MINUTES };
+  return { id: newId(), type: "gather", minutes: SPORT.shape.gather };
 }
 
 export function newClosing(): SessionPart {

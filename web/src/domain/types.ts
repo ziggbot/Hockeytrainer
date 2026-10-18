@@ -2,19 +2,63 @@
 // mapped 1:1 to Postgres tables when the Supabase backend lands.
 // No player personal data anywhere (spec §4, GDPR): only a player count.
 
-export type Skill = "skating" | "puckHandling" | "passing" | "shooting" | "gameSense" | "battles" | "goalie";
+/** Skills across both sports; each sport pack lists the ones it uses (`SPORT.skills`). */
+export type Skill =
+  // ice hockey
+  | "skating"
+  | "puckHandling"
+  | "battles"
+  // floorball
+  | "movement"
+  | "ballControl"
+  | "feints"
+  | "defence"
+  // both
+  | "passing"
+  | "shooting"
+  | "gameSense"
+  | "goalie";
 
-export const SKILLS: Skill[] = ["skating", "puckHandling", "passing", "shooting", "gameSense", "battles", "goalie"];
+export const ALL_SKILLS: Skill[] = [
+  "skating",
+  "puckHandling",
+  "battles",
+  "movement",
+  "ballControl",
+  "feints",
+  "defence",
+  "passing",
+  "shooting",
+  "gameSense",
+  "goalie"
+];
 
-/** Where on the ice a drill runs. "station" = fits one cross-ice station. */
-export type IceArea = "full" | "half" | "third" | "station";
+/**
+ * Where a drill runs. Ice: full, half, third (a zone), station (half an end
+ * zone). Floorball court (40 × 20 m): full, half, station (a quarter, 20 × 10).
+ */
+export type Area = "full" | "half" | "third" | "station";
 
-export const ICE_AREAS: IceArea[] = ["full", "half", "third", "station"];
+export const ALL_AREAS: Area[] = ["full", "half", "third", "station"];
 
 /** Planner role of a drill: opener, skill work, or game form at the end. */
 export type DrillKind = "warmup" | "drill" | "game";
 
-export type EquipmentItem = "pucks" | "cones" | "pinnies" | "smallNets" | "tires" | "sticksOnIce" | "goals";
+export type EquipmentItem =
+  "pucks" | "balls" | "cones" | "pinnies" | "smallNets" | "goals" | "tires" | "sticksOnIce" | "boards" | "ladder";
+
+export const ALL_EQUIPMENT: EquipmentItem[] = [
+  "pucks",
+  "balls",
+  "cones",
+  "pinnies",
+  "smallNets",
+  "goals",
+  "tires",
+  "sticksOnIce",
+  "boards",
+  "ladder"
+];
 
 export interface EquipmentNeed {
   item: EquipmentItem;
@@ -34,8 +78,11 @@ export interface Drill {
   ageMax: number;
   /** Default duration in minutes. */
   minutes: number;
-  iceArea: IceArea;
+  /** Where it runs (named for ice, kept for saved data; a court area in floorball). */
+  iceArea: Area;
   minPlayers: number;
+  /** Needs a goalkeeper in goal; left out for levels that play without one. */
+  needsGoalie?: boolean;
   equipment: EquipmentNeed[];
   /** Image URL or data URL. Uploaded image in the MVP (spec §5.3). */
   diagram?: string;
@@ -50,6 +97,8 @@ export interface AgeGroup {
   ageMax: number;
   /** Adapted game format notes, e.g. cross-ice 3v3. */
   gameFormat: string;
+  /** false: this level plays without goalkeepers (floorball green level). */
+  goalkeepers?: boolean;
 }
 
 export interface SeasonBlock {

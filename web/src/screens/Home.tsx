@@ -9,11 +9,12 @@ import { useNow } from "../components/useNow";
 import { addDays, toISODate } from "../domain/dates";
 import { drillIdsOf } from "../domain/planner";
 import { nextSlot, upcomingSlots, weekSlots, type Slot } from "../domain/schedule";
-import { SKILLS, type Team } from "../domain/types";
+import type { Team } from "../domain/types";
 import { S, formatDayLong, formatDayShort, formatTime, relativeDay, shortDay } from "../i18n";
 import { activeTeam, planSession, previewPlan, setDone } from "../store/actions";
 import { useAppState } from "../store/store";
 import { Onboarding } from "./Onboarding";
+import { SPORT } from "../sport";
 
 const t = S.ui.home;
 
@@ -120,7 +121,7 @@ export function Home() {
             <h2>{t.findDrill}</h2>
           </div>
           <div className="chips">
-            {SKILLS.map((skill) => (
+            {SPORT.skills.map((skill) => (
               <AppLink key={skill} to={`/ovningar?skill=${skill}`} className="chip">
                 <span className="chip__icon">{S.skillIcons[skill]}</span>
                 {S.skills[skill]}

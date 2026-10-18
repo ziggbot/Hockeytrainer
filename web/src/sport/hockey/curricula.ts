@@ -1,4 +1,4 @@
-import type { AgeGroup, Curriculum, SeasonBlock, Skill } from "../domain/types";
+import type { AgeGroup, Curriculum, SeasonBlock, Skill } from "../../domain/types";
 
 // Pre-filled club curriculum (spec §5.2). This is a neutral starting point
 // written for the app, NOT federation guidance — the club admin adjusts it,

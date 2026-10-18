@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { isoWeek, isoWeeksInYear, parseISODate } from "./dates";
 import { currentBlock } from "./curriculum";
 import {
-  MATCH_STATION_ID,
   allocate,
   snapToSteps,
   drillIdsOf,
@@ -16,9 +15,12 @@ import { equipmentFor } from "./equipment";
 import { insertGather, setPartMinutes } from "./editParts";
 import { decodeShare, encodeShare } from "./share";
 import { nextSlot, upcomingSlots, weekSlots } from "./schedule";
-import { AGE_GROUPS, SEED_CURRICULA } from "../content/curricula";
-import { SEED_DRILLS } from "../content/drills";
-import { SEED_TEMPLATES } from "../content/templates";
+import { AGE_GROUPS, SEED_CURRICULA } from "../sport/hockey/curricula";
+import { SEED_DRILLS } from "../sport/hockey/drills";
+import { SEED_TEMPLATES } from "../sport/hockey/templates";
+import { hockey } from "../sport/hockey";
+
+const MATCH_STATION_ID = hockey.shape.matchStationId;
 import type { Drill, PartDraft, Session, SessionPart, Team } from "./types";
 
 const isStep = (m: number) => m > 0 && m % 5 === 0;

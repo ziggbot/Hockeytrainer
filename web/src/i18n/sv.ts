@@ -1,35 +1,58 @@
-import type { DrillKind, EquipmentItem, IceArea, NoteTag, Skill } from "../domain/types";
+import type { Area, DrillKind, EquipmentItem, NoteTag, Skill } from "../domain/types";
+import { SPORT_ID, type SportId } from "../sport/id";
 
 // Swedish UI strings (spec §6: Swedish first, i18n-ready). Add en/fi/no by
 // creating sibling files with the same shape.
+
+/** The few words that differ between the hockey and floorball apps. */
+const BY_SPORT = {
+  hockey: {
+    clubName: "Färjestad BK",
+    slotTime: "Istid",
+    openLive: "Öppna rinkläget",
+    areas: { full: "Helplan", half: "Halvplan", third: "Zon", station: "Station" }
+  },
+  innebandy: {
+    clubName: "Herrhagens Innebandy",
+    slotTime: "Halltid",
+    openLive: "Öppna planläget",
+    areas: { full: "Helplan", half: "Halvplan", third: "Tredjedel", station: "Kvartsplan" }
+  }
+} satisfies Record<SportId, { clubName: string; slotTime: string; openLive: string; areas: Record<Area, string> }>;
+
+const T = BY_SPORT[SPORT_ID];
 
 export const sv = {
   skills: {
     skating: "Skridsko",
     puckHandling: "Puckkontroll",
+    battles: "Närkamp",
+    movement: "Rörelse",
+    ballControl: "Bollkontroll",
+    feints: "Finter & 1 mot 1",
+    defence: "Försvarsspel",
     passing: "Passning",
     shooting: "Skott",
     gameSense: "Spelförståelse",
-    battles: "Närkamp",
     goalie: "Målvakt"
   } satisfies Record<Skill, string>,
 
   skillIcons: {
     skating: "⛸️",
     puckHandling: "🏒",
+    battles: "💪",
+    movement: "🤸",
+    ballControl: "🏑",
+    feints: "↪️",
+    defence: "🛡️",
     passing: "🔁",
     shooting: "🎯",
     gameSense: "🧠",
-    battles: "💪",
     goalie: "🥅"
   } satisfies Record<Skill, string>,
 
-  iceAreas: {
-    full: "Helplan",
-    half: "Halvplan",
-    third: "Zon",
-    station: "Station"
-  } satisfies Record<IceArea, string>,
+  /** Ice areas in the hockey app, court areas in the floorball app. */
+  iceAreas: T.areas satisfies Record<Area, string>,
 
   kinds: {
     warmup: "Uppvärmning",
@@ -39,12 +62,15 @@ export const sv = {
 
   equipment: {
     pucks: "Puckar",
+    balls: "Bollar",
     cones: "Koner",
     pinnies: "Västar",
     smallNets: "Småmål",
     tires: "Däck",
     sticksOnIce: "Klubbor att lägga på isen",
-    goals: "Stora mål"
+    goals: "Stora mål",
+    boards: "Sargbitar",
+    ladder: "Koordinationsstege"
   } satisfies Record<EquipmentItem, string>,
 
   noteTags: {
@@ -72,7 +98,7 @@ export const sv = {
   ],
   ui: {
     appName: "Tränarappen",
-    clubName: "Färjestad BK",
+    clubName: T.clubName,
     common: {
       today: "Idag",
       tomorrow: "Imorgon",
@@ -126,7 +152,7 @@ export const sv = {
       title: "Extrapass",
       date: "Dag",
       start: "Starttid",
-      length: "Istid (minuter)",
+      length: `${T.slotTime} (minuter)`,
       add: "Lägg till"
     },
     session: {
@@ -256,7 +282,7 @@ export const sv = {
       addTime: "Lägg till tid",
       day: "Dag",
       start: "Start",
-      length: "Istid",
+      length: T.slotTime,
       otherTeams: "Mina lag",
       switchTo: "Byt",
       active: "Aktivt",
@@ -276,7 +302,7 @@ export const sv = {
       sub: "Allt går att ändra sen.",
       days: "Vilka dagar tränar ni?",
       start: "Starttid",
-      length: "Istid (minuter)",
+      length: `${T.slotTime} (minuter)`,
       go: "Klart – nu kör vi",
       needName: "Skriv lagets namn.",
       needDay: "Välj minst en dag."
@@ -285,7 +311,7 @@ export const sv = {
       title: "Delat pass",
       readOnly: "Skrivskyddad vy.",
       broken: "Länken är trasig eller ofullständig. Be tränaren dela passet igen.",
-      openRink: "Öppna rinkläget"
+      openRink: T.openLive
     }
   }
 };

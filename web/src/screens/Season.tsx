@@ -7,10 +7,11 @@ import { Stepper } from "../components/Stepper";
 import { currentBlock, weekInBlock } from "../domain/curriculum";
 import { isoWeek, parseISODate } from "../domain/dates";
 import { drillIdsOf } from "../domain/planner";
-import { SKILLS, type SeasonBlock, type Skill } from "../domain/types";
+import type { SeasonBlock, Skill } from "../domain/types";
 import { S, formatDayShort } from "../i18n";
 import { activeTeam, ageGroupOf, allDrills, curriculumOf, updateBlock, updatePhilosophy } from "../store/actions";
 import { useAppState } from "../store/store";
+import { SPORT } from "../sport";
 
 const t = S.ui.season;
 
@@ -210,7 +211,7 @@ function BlockSheet({ block, onClose, onSave }: { block: SeasonBlock; onClose: (
       <div className="field">
         <span className="field__label">{t.focus}</span>
         <div className="chips" style={{ marginTop: 4 }}>
-          {SKILLS.map((s) => (
+          {SPORT.skills.map((s) => (
             <button
               key={s}
               type="button"

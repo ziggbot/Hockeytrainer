@@ -3,10 +3,11 @@ import { useSearchParams } from "react-router-dom";
 import { AppLink } from "../components/AppLink";
 import { BottomNav, TopBar } from "../components/Chrome";
 import { filterDrills } from "../components/DrillPicker";
-import { ICE_AREAS, SKILLS, type IceArea, type Skill } from "../domain/types";
+import type { Area, Skill } from "../domain/types";
 import { S } from "../i18n";
 import { activeTeam, ageGroupOf, allDrills } from "../store/actions";
 import { useAppState } from "../store/store";
+import { SPORT } from "../sport";
 
 const t = S.ui.library;
 
@@ -21,7 +22,7 @@ export function DrillLibrary() {
   const ageGroup = team ? ageGroupOf(team) : null;
   const [params, setParams] = useSearchParams();
   const skill = (params.get("skill") as Skill | null) ?? null;
-  const area = (params.get("area") as IceArea | null) ?? null;
+  const area = (params.get("area") as Area | null) ?? null;
   const length = (params.get("length") as Length | null) ?? null;
   const allAges = params.get("ages") === "all";
   const query = params.get("q") ?? "";
@@ -64,7 +65,7 @@ export function DrillLibrary() {
               {t.onlyAge(ageGroup.name)}
             </button>
           )}
-          {SKILLS.map((s) => (
+          {SPORT.skills.map((s) => (
             <button
               key={s}
               type="button"
@@ -77,7 +78,7 @@ export function DrillLibrary() {
           ))}
         </div>
         <div className="rail" style={{ marginTop: 0 }}>
-          {ICE_AREAS.map((a) => (
+          {SPORT.areas.map((a) => (
             <button
               key={a}
               type="button"

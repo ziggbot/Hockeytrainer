@@ -1,10 +1,9 @@
 import type { Drill, EquipmentItem, EquipmentNeed, SessionPart } from "./types";
+import { SPORT } from "../sport";
 
 // Equipment checklist (spec §5.5), generated from the drills in a session.
 // Sequential parts reuse the same gear, so we take the max per item across
 // parts. Stations in a rotation run at the same time, so their needs add up.
-
-export const EQUIPMENT_ORDER: EquipmentItem[] = ["pucks", "cones", "pinnies", "smallNets", "goals", "tires", "sticksOnIce"];
 
 export interface EquipmentLine {
   item: EquipmentItem;
@@ -25,7 +24,12 @@ function needsOf(drill: Drill | undefined, playerCount: number): Map<EquipmentIt
   return out;
 }
 
-export function equipmentFor(parts: SessionPart[], drillsById: Map<string, Drill>, playerCount: number): EquipmentLine[] {
+export function equipmentFor(
+  parts: SessionPart[],
+  drillsById: Map<string, Drill>,
+  playerCount: number,
+  order: EquipmentItem[] = SPORT.equipment
+): EquipmentLine[] {
   const total = new Map<EquipmentItem, number>();
   for (const part of parts) {
     const partNeeds = new Map<EquipmentItem, number>();
@@ -40,5 +44,5 @@ export function equipmentFor(parts: SessionPart[], drillsById: Map<string, Drill
     }
     for (const [item, count] of partNeeds) total.set(item, Math.max(total.get(item) ?? 0, count));
   }
-  return EQUIPMENT_ORDER.filter((item) => total.has(item)).map((item) => ({ item, count: total.get(item)! }));
+  return order.filter((item) => total.has(item)).map((item) => ({ item, count: total.get(item)! }));
 }

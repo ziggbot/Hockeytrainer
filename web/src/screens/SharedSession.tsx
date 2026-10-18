@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { AppMark } from "../components/AppMark";
 import { stationStyle } from "../components/stationColor";
-import { SEED_DRILLS } from "../content/drills";
 import { minutesToTime, parseISODate, timeToMinutes } from "../domain/dates";
 import { partMinutes, totalMinutes } from "../domain/planner";
 import { decodeShare } from "../domain/share";
@@ -10,6 +9,7 @@ import { stationLetter } from "../domain/editParts";
 import { S, formatDayLong, formatTime } from "../i18n";
 import { RinkMode } from "./RinkMode";
 import { PlanTotal, talkLabel } from "./SessionScreen";
+import { SPORT } from "../sport";
 
 const t = S.ui.shared;
 
@@ -32,7 +32,7 @@ export function SharedSession() {
   const drillsById = useMemo(() => {
     const map = new Map((shared?.drills ?? []).map((d) => [d.id, d]));
     // App seed wins over anything in the link with the same id.
-    for (const d of SEED_DRILLS) map.set(d.id, d);
+    for (const d of SPORT.drills) map.set(d.id, d);
     return map;
   }, [shared]);
 

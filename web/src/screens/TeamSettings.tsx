@@ -4,12 +4,12 @@ import { BackBar } from "../components/Chrome";
 import { ConfirmButton } from "../components/ConfirmButton";
 import { Stepper } from "../components/Stepper";
 import { TimeAndLength } from "../components/TimeAndLength";
-import { AGE_GROUPS } from "../content/curricula";
 import type { Team, TrainingTime } from "../domain/types";
 import { S } from "../i18n";
 import { IS_ARTIFACT } from "../platform";
 import { activeTeam, deleteTeam, newTrainingTime, setActiveTeam, setCoachName, updateTeam } from "../store/actions";
 import { getState, replaceState, useAppState, type AppState } from "../store/store";
+import { SPORT } from "../sport";
 
 const t = S.ui.team;
 
@@ -52,7 +52,7 @@ export function TeamSettings() {
       <div className="field">
         <span className="field__label">{t.ageGroup}</span>
         <div className="chips" style={{ marginTop: 4 }}>
-          {AGE_GROUPS.map((a) => (
+          {SPORT.ageGroups.map((a) => (
             <button
               key={a.id}
               type="button"
@@ -140,7 +140,7 @@ export function TeamSettings() {
               <span className="row__icon">🏒</span>
               <span className="row__main">
                 <div className="row__title">{x.name}</div>
-                <div className="row__sub">{AGE_GROUPS.find((a) => a.id === x.ageGroupId)?.name}</div>
+                <div className="row__sub">{SPORT.ageGroups.find((a) => a.id === x.ageGroupId)?.name}</div>
               </span>
               {x.id === team.id ? (
                 <span className="tag">{t.active}</span>

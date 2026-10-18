@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BackBar } from "../components/Chrome";
 import { Stepper } from "../components/Stepper";
-import { EQUIPMENT_ORDER } from "../domain/equipment";
 import { STEP, roundToStep } from "../domain/planner";
-import { ICE_AREAS, SKILLS, type Drill, type DrillKind, type EquipmentItem, type Skill } from "../domain/types";
+import type { Area, Drill, DrillKind, EquipmentItem, Skill } from "../domain/types";
 import { S } from "../i18n";
 import { activeTeam, ageGroupOf, saveOwnDrill } from "../store/actions";
 import { newId, useAppState } from "../store/store";
+import { SPORT } from "../sport";
 
 const t = S.ui.editor;
 const KINDS: DrillKind[] = ["warmup", "drill", "game"];
@@ -40,13 +40,15 @@ export function DrillEditor() {
   const [ageMin, setAgeMin] = useState(existing?.ageMin ?? ag?.ageMin ?? 8);
   const [ageMax, setAgeMax] = useState(existing?.ageMax ?? ag?.ageMax ?? 12);
   const [minutes, setMinutes] = useState(roundToStep(existing?.minutes ?? 10));
-  const [iceArea, setIceArea] = useState(existing?.iceArea ?? "half");
+  const [iceArea, setIceArea] = useState<Area>(existing?.iceArea ?? "half");
   const [minPlayers, setMinPlayers] = useState(existing?.minPlayers ?? 1);
   const [equipment, setEquipment] = useState<Partial<Record<EquipmentItem, number>>>(
     Object.fromEntries((existing?.equipment ?? []).map((e) => [e.item, typeof e.count === "number" ? e.count : 0]))
   );
-  const [perPlayerPucks, setPerPlayerPucks] = useState(
-    existing?.equipment.some((e) => e.item === "pucks" && e.count === "perPlayer") ?? false
+  // Pucks or balls: one per player, or a count.
+  const perItem = SPORT.perPlayerItem;
+  const [perPlayer, setPerPlayer] = useState(
+    existing?.equipment.some((e) => e.item === perItem && e.count === "perPlayer") ?? false
   );
   const [diagram, setDiagram] = useState<string | undefined>(existing?.diagram);
   const [error, setError] = useState<string | null>(null);
@@ -71,11 +73,13 @@ export function DrillEditor() {
       iceArea,
       minPlayers,
       equipment: [
-        ...(perPlayerPucks ? [{ item: "pucks" as const, count: "perPlayer" as const }] : []),
-        ...EQUIPMENT_ORDER.filter((item) => (equipment[item] ?? 0) > 0 && !(item === "pucks" && perPlayerPucks)).map((item) => ({
-          item,
-          count: equipment[item]!
-        }))
+        ...(perPlayer ? [{ item: perItem, count: "perPlayer" as const }] : []),
+        ...SPORT.equipment
+          .filter((item) => (equipment[item] ?? 0) > 0 && !(item === perItem && perPlayer))
+          .map((item) => ({
+            item,
+            count: equipment[item]!
+          }))
       ],
       diagram,
       visibility: "private",
@@ -109,7 +113,7 @@ export function DrillEditor() {
       <div className="field">
         <span className="field__label">{t.skills}</span>
         <div className="chips" style={{ marginTop: 4 }}>
-          {SKILLS.map((s) => (
+          {SPORT.skills.map((s) => (
             <button
               key={s}
               type="button"
@@ -144,7 +148,7 @@ export function DrillEditor() {
       <div className="field">
         <span className="field__label">{t.area}</span>
         <div className="chips" style={{ marginTop: 4 }}>
-          {ICE_AREAS.map((a) => (
+          {SPORT.areas.map((a) => (
             <button
               key={a}
               type="button"
@@ -189,27 +193,27 @@ export function DrillEditor() {
       <div className="field">
         <span className="field__label">{t.equipment}</span>
         <ul className="rows">
-          {EQUIPMENT_ORDER.map((item) => (
+          {SPORT.equipment.map((item) => (
             <li key={item} className="row row--compact">
               <span className="row__icon" />
               <span className="row__title">{S.equipment[item]}</span>
-              {item === "pucks" ? (
+              {item === perItem ? (
                 <span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
                   <button
                     type="button"
-                    className={`chip chip--sm${perPlayerPucks ? " chip--on" : ""}`}
-                    aria-pressed={perPlayerPucks}
-                    onClick={() => setPerPlayerPucks(!perPlayerPucks)}
+                    className={`chip chip--sm${perPlayer ? " chip--on" : ""}`}
+                    aria-pressed={perPlayer}
+                    onClick={() => setPerPlayer(!perPlayer)}
                   >
                     {S.ui.drill.perPlayer}
                   </button>
-                  {!perPlayerPucks && (
+                  {!perPlayer && (
                     <Stepper
-                      value={equipment.pucks ?? 0}
-                      onChange={(v) => setEquipment({ ...equipment, pucks: v })}
+                      value={equipment[perItem] ?? 0}
+                      onChange={(v) => setEquipment({ ...equipment, [perItem]: v })}
                       min={0}
                       max={60}
-                      label={S.equipment.pucks}
+                      label={S.equipment[perItem]}
                     />
                   )}
                 </span>

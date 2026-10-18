@@ -1,5 +1,7 @@
 import type { AgeGroup, Drill, PartDraft, SessionPart, SessionTemplate, Skill } from "./types";
 import { ageOverlaps } from "./curriculum";
+import { SPORT } from "../sport";
+import type { SessionShape } from "../sport/types";
 
 // "Plan practice" (spec §5.4): suggest a session that matches the team's
 // current block, sized to the ice slot.
@@ -10,15 +12,10 @@ export const MIN_PART_MINUTES = STEP;
 export const MIN_STATION_MINUTES = STEP;
 /** The club's standard rotation. */
 export const STATION_COUNT = 4;
-/** Every practice opens with these (club's base). */
-export const WARMUP_MINUTES = 5;
-export const GATHER_MINUTES = 5;
 /** Every practice ends with a closing talk: 5 min, or 10 on long ice. */
 export const CLOSING_MINUTES = 5;
 export const LONG_PRACTICE_MINUTES = 75;
 export const closingMinutes = (total: number) => (total >= LONG_PRACTICE_MINUTES ? 2 * STEP : CLOSING_MINUTES);
-/** One station of every rotation is a plain game against small goals; it is the last one. */
-export const MATCH_STATION_ID = "g-smallgoals";
 /** Bumped when the planner's output shape changes; see store `refreshUntouchedPlans`. */
 export const PLAN_VERSION = 4;
 
@@ -50,29 +47,30 @@ export interface Allocation {
 }
 
 /**
- * Split an ice slot into the club's base, all in 5-minute steps: warm-up 5,
- * gathering 5, rotation of 4 × 5 (or 4 × 10 from 60 min) and a closing talk
- * of 5 (10 from 75 min). What is left becomes a game up to 20 and
- * whole-group drills of 10–20 min; 5 minutes left over go to the warm-up.
+ * Split an ice slot into the club's base (`shape`), all in 5-minute steps:
+ * warm-up, gathering, rotation of 4 × 5 (or 4 × 10 from 60 min) and a
+ * closing talk of 5 (10 from 75 min). What is left becomes a game up to 20
+ * and whole-group drills of 10–20 min; 5 minutes left over go to a warm-up
+ * under 10, otherwise to a short game.
  */
-export function allocate(total: number, stations = STATION_COUNT): Allocation {
+export function allocate(total: number, stations = STATION_COUNT, shape: SessionShape = SPORT.shape): Allocation {
   const t = Math.floor(total / STEP) * STEP;
   const closing = closingMinutes(t);
-  if (t < WARMUP_MINUTES + GATHER_MINUTES + STEP * stations + closing) {
+  if (t < shape.warmup + shape.gather + STEP * stations + closing) {
     // Too short for a rotation: warm-up, a game and the closing talk.
-    const warmup = Math.min(t, WARMUP_MINUTES);
+    const warmup = Math.min(t, shape.warmup);
     const end = Math.min(CLOSING_MINUTES, t - warmup);
     return { warmup, gather: 0, perStation: 0, extras: [], game: t - warmup - end, closing: end };
   }
   const perStation = t >= 60 ? 2 * STEP : STEP;
-  let warmup = WARMUP_MINUTES;
-  let left = t - warmup - GATHER_MINUTES - perStation * stations - closing;
+  let warmup = shape.warmup;
+  let left = t - warmup - shape.gather - perStation * stations - closing;
   // Too short for a part of its own.
-  if (left === STEP) {
+  if (left === STEP && warmup < 2 * STEP) {
     warmup += STEP;
     left = 0;
   }
-  const base = { warmup, gather: GATHER_MINUTES, perStation, closing };
+  const base = { warmup, gather: shape.gather, perStation, closing };
   if (left <= 20) return { ...base, extras: [], game: left };
   let game = 15;
   left -= game;
@@ -100,13 +98,13 @@ export interface Blueprint {
 }
 
 /** warm-up → gathering → stations (+ free zone) → whole-group drills → game → closing */
-export function assemble(bp: Blueprint, minutes: number): PartDraft[] {
-  const a = allocate(minutes, bp.stations.length || STATION_COUNT);
+export function assemble(bp: Blueprint, minutes: number, shape: SessionShape = SPORT.shape): PartDraft[] {
+  const a = allocate(minutes, bp.stations.length || STATION_COUNT, shape);
   const parts: PartDraft[] = [];
   if (bp.warmup && a.warmup > 0) parts.push({ type: "drill", drillId: bp.warmup, minutes: a.warmup });
   if (a.perStation > 0 && bp.stations.length >= 2) {
     parts.push({ type: "gather", minutes: a.gather });
-    parts.push({ type: "stations", drillIds: bp.stations, minutesPerStation: a.perStation, freeZone: true });
+    parts.push({ type: "stations", drillIds: bp.stations, minutesPerStation: a.perStation, freeZone: shape.freeZone });
   }
   a.extras.forEach((m, i) => {
     if (bp.extras[i]) parts.push({ type: "drill", drillId: bp.extras[i], minutes: m });
@@ -159,6 +157,8 @@ export interface PlanContext {
   templates: SessionTemplate[];
   /** 0 = best suggestion; higher values give alternatives ("Nytt förslag"). */
   variant: number;
+  /** The club's session base; the active sport's when left out. */
+  shape?: SessionShape;
 }
 
 export interface PlanSuggestion {
@@ -173,8 +173,9 @@ const overlap = (a: Skill[], b: Skill[]) => a.filter((s) => b.includes(s)).lengt
 
 export const templateDrillIds = (t: SessionTemplate) => [t.warmup, ...t.extras, ...t.stations, t.game];
 
-/** The small-goal match for the last station, if the library has it. */
-const matchStation = (drills: Drill[]) => (drills.some((d) => d.id === MATCH_STATION_ID) ? MATCH_STATION_ID : undefined);
+/** The match for the last station, if the library has it. */
+const matchStation = (drills: Drill[], shape: SessionShape) =>
+  drills.some((d) => d.id === shape.matchStationId) ? shape.matchStationId : undefined;
 
 /** Templates usable for this team, best match first. */
 export function matchingTemplates(ctx: Pick<PlanContext, "ageGroup" | "focus" | "templates" | "drills">): SessionTemplate[] {
@@ -224,9 +225,14 @@ function rotate<T>(list: T[], by: number): T[] {
 function candidates(ctx: PlanContext, seed: number) {
   const focus = ctx.focus.length > 0 ? ctx.focus : ctx.targetSkills.slice(0, 2);
   const rand = mulberry32(hashString(`${ctx.ageGroup.id}|${focus.join(",")}|${seed}`));
+  const noGoalies = ctx.ageGroup.goalkeepers === false;
   const usable = (slack: number) =>
     ctx.drills.filter(
-      (d) => ageOverlaps(d, ctx.ageGroup, slack) && d.minPlayers <= ctx.playerCount && !d.skills.includes("goalie")
+      (d) =>
+        ageOverlaps(d, ctx.ageGroup, slack) &&
+        d.minPlayers <= ctx.playerCount &&
+        !d.skills.includes("goalie") &&
+        !(noGoalies && d.needsGoalie)
     );
   let pool = usable(0);
   if (pool.length < 12) pool = usable(2);
@@ -253,14 +259,16 @@ function candidates(ctx: PlanContext, seed: number) {
   return {
     focus,
     warmups: ranked((d) => d.kind === "warmup"),
-    // A station is half an end zone, so only drills that fit one.
-    stations: ranked((d) => d.kind !== "warmup" && (d.iceArea === "station" || d.iceArea === "third")),
+    // Only drills that fit one station's part of the ice or court.
+    stations: ranked((d) => d.kind !== "warmup" && shapeOf(ctx).stationAreas.includes(d.iceArea)),
     extras: ranked((d) => d.kind === "drill"),
     games: ranked((d) => d.kind === "game", true)
   };
 }
 
 const firstNotIn = (list: string[], used: Set<string>) => list.find((id) => !used.has(id));
+
+const shapeOf = (ctx: PlanContext) => ctx.shape ?? SPORT.shape;
 
 /** Enough whole-group drills for the longest ice time (180 min). */
 const MAX_EXTRAS = 6;
@@ -281,14 +289,14 @@ export function suggestPlan(ctx: PlanContext): PlanSuggestion {
   if (ctx.variant < templates.length) {
     const t = templates[ctx.variant];
     const c = candidates(ctx, 0);
-    const match = matchStation(ctx.drills);
+    const match = matchStation(ctx.drills, shapeOf(ctx));
     const used = new Set([...templateDrillIds(t), ...(match ? [match] : [])]);
     // Without the match drill, a library station takes its place.
     const stations = [...t.stations, ...(match ? [match] : takeDistinct(c.stations, 1, used))];
     // Long slots may need more whole-group drills than the template lists.
     const fill = takeDistinct(c.extras, MAX_EXTRAS, used);
     const bp: Blueprint = { warmup: t.warmup, stations, extras: [...t.extras, ...fill], game: t.game };
-    return { title: t.title, focus: t.focus, parts: assemble(bp, ctx.minutes), templateId: t.id };
+    return { title: t.title, focus: t.focus, parts: assemble(bp, ctx.minutes, shapeOf(ctx)), templateId: t.id };
   }
   return generatePlan(ctx, ctx.variant - templates.length);
 }
@@ -299,7 +307,7 @@ export function suggestPlan(ctx: PlanContext): PlanSuggestion {
  */
 export function generatePlan(ctx: PlanContext, seed: number): PlanSuggestion {
   const c = candidates(ctx, seed);
-  const match = matchStation(ctx.drills);
+  const match = matchStation(ctx.drills, shapeOf(ctx));
   const used = new Set<string>(match ? [match] : []);
   const warmup = firstNotIn(c.warmups, used);
   if (warmup) used.add(warmup);
@@ -308,5 +316,5 @@ export function generatePlan(ctx: PlanContext, seed: number): PlanSuggestion {
   const game = firstNotIn(c.games, used);
   if (game) used.add(game);
   const extras = takeDistinct(c.extras, MAX_EXTRAS, used);
-  return { focus: c.focus, parts: assemble({ warmup, stations, extras, game }, ctx.minutes) };
+  return { focus: c.focus, parts: assemble({ warmup, stations, extras, game }, ctx.minutes, shapeOf(ctx)) };
 }

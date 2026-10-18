@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import type { Curriculum, Drill, Session, SessionNote, SessionTemplate, Team } from "../domain/types";
-import { SEED_CURRICULA } from "../content/curricula";
+import { SPORT } from "../sport";
 import { readItem, writeItem } from "./storage";
 
 // Local-first store (spec §6: offline-first). Everything lives on this
@@ -21,7 +21,7 @@ export interface AppState {
   notes: SessionNote[];
 }
 
-const KEY = "hockeytrainer.v1";
+const KEY = `${SPORT.storagePrefix}.v1`;
 export const MAX_COACH_NAME = 60;
 
 function initialState(): AppState {
@@ -30,7 +30,7 @@ function initialState(): AppState {
     coachName: "",
     teams: [],
     activeTeamId: null,
-    curricula: SEED_CURRICULA,
+    curricula: SPORT.curricula,
     ownDrills: [],
     ownTemplates: [],
     sessions: [],

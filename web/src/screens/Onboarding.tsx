@@ -3,9 +3,9 @@ import { BackBar } from "../components/Chrome";
 import { AppMark } from "../components/AppMark";
 import { Stepper } from "../components/Stepper";
 import { TimeAndLength } from "../components/TimeAndLength";
-import { AGE_GROUPS } from "../content/curricula";
 import { S } from "../i18n";
 import { createTeam, newTrainingTime, setCoachName } from "../store/actions";
+import { SPORT } from "../sport";
 
 const t = S.ui.onboarding;
 
@@ -13,7 +13,7 @@ const t = S.ui.onboarding;
 export function Onboarding({ onDone, showBack = false }: { onDone?: () => void; showBack?: boolean }) {
   const [coach, setCoach] = useState("");
   const [name, setName] = useState("");
-  const [ageGroupId, setAgeGroupId] = useState("u10");
+  const [ageGroupId, setAgeGroupId] = useState(SPORT.defaultAgeGroupId);
   // One entry per training day, each with its own start and ice time.
   const [times, setTimes] = useState<{ weekday: number; start: string; minutes: number }[]>([]);
   const [players, setPlayers] = useState(14);
@@ -79,7 +79,7 @@ export function Onboarding({ onDone, showBack = false }: { onDone?: () => void; 
       <div className="field">
         <span className="field__label">{S.ui.team.ageGroup}</span>
         <div className="chips" style={{ marginTop: 4 }}>
-          {AGE_GROUPS.map((a) => (
+          {SPORT.ageGroups.map((a) => (
             <button
               key={a.id}
               type="button"

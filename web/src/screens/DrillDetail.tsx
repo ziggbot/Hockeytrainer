@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { AppLink } from "../components/AppLink";
 import { BackBar, BottomNav } from "../components/Chrome";
 import { ConfirmButton } from "../components/ConfirmButton";
-import { RinkDiagram } from "../components/RinkDiagram";
+import { AreaDiagram } from "../components/AreaDiagram";
 import { Sheet } from "../components/Sheet";
 import { upcomingSlots } from "../domain/schedule";
 import type { Drill, EquipmentNeed } from "../domain/types";
@@ -54,7 +54,7 @@ export function DrillDetail() {
         </p>
 
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
-          <RinkDiagram area={drill.iceArea} width={150} />
+          <AreaDiagram area={drill.iceArea} width={150} />
           <span className="display" style={{ fontSize: 22 }}>
             {S.iceAreas[drill.iceArea]}
           </span>
@@ -161,7 +161,7 @@ function AddToSessionSheet({ drill, onClose, onAdded }: { drill: Drill; onClose:
                   onAdded(label);
                 }}
               >
-                <span className="row__icon">🏒</span>
+                <span className="row__icon">{S.ui.sportIcon}</span>
                 <span className="row__main">
                   <div className="row__title">{label}</div>
                   <div className="row__sub">{slot.session?.title ?? S.ui.home.unplanned}</div>

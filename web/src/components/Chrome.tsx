@@ -49,7 +49,7 @@ export function BackBar({ to, right }: { to?: string; right?: ReactNode }) {
 
 const ITEMS = [
   { to: "/sasong", icon: "📈", label: S.ui.nav.season },
-  { to: "/", icon: "🏒", label: S.ui.nav.train },
+  { to: "/", icon: S.ui.sportIcon, label: S.ui.nav.train },
   { to: "/ovningar", icon: "📋", label: S.ui.nav.drills }
 ];
 

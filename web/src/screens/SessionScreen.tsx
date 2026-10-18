@@ -48,6 +48,7 @@ import {
 } from "../store/actions";
 import { useAppState } from "../store/store";
 import { shareUrl } from "../platform";
+import { SPORT } from "../sport";
 
 const t = S.ui.session;
 
@@ -204,14 +205,16 @@ export function SessionScreen() {
                               + {t.addStation}
                             </button>
                           )}
-                          <button
-                            type="button"
-                            className={`chip chip--sm${part.freeZone ? " chip--on" : ""}`}
-                            aria-pressed={!!part.freeZone}
-                            onClick={() => edit(toggleFreeZone(parts, part.id))}
-                          >
-                            {t.freeZone}
-                          </button>
+                          {SPORT.shape.freeZone && (
+                            <button
+                              type="button"
+                              className={`chip chip--sm${part.freeZone ? " chip--on" : ""}`}
+                              aria-pressed={!!part.freeZone}
+                              onClick={() => edit(toggleFreeZone(parts, part.id))}
+                            >
+                              {t.freeZone}
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>

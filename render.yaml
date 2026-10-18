@@ -25,3 +25,25 @@ services:
       - path: /sw.js
         name: Cache-Control
         value: "no-cache"
+
+  # Floorball app (Herrhagens Innebandy) from the same code: VITE_SPORT
+  # selects the sport pack at build time.
+  - type: web
+    name: tranarappen-innebandy
+    runtime: static
+    rootDir: web
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: VITE_SPORT
+        value: innebandy
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /sw.js
+        name: Cache-Control
+        value: "no-cache"

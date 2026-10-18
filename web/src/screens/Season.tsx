@@ -132,7 +132,7 @@ export function Season() {
               return (
                 <li key={s.id}>
                   <AppLink to={`/pass/${s.id}`} className="row">
-                    <span className="row__icon">{s.focus?.[0] ? S.skillIcons[s.focus[0]] : "🏒"}</span>
+                    <span className="row__icon">{s.focus?.[0] ? S.skillIcons[s.focus[0]] : S.ui.sportIcon}</span>
                     <span className="row__day" style={{ fontSize: 22 }}>
                       {formatDayShort(parseISODate(s.date))}
                     </span>

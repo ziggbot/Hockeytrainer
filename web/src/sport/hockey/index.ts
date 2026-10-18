@@ -7,6 +7,7 @@ export const hockey: SportPack = {
   id: "hockey",
   storagePrefix: "hockeytrainer",
   logo: "/club-logo.png",
+  logoSize: [49, 44],
   skills: ["skating", "puckHandling", "passing", "shooting", "gameSense", "battles", "goalie"],
   areas: ["full", "half", "third", "station"],
   equipment: ["pucks", "cones", "pinnies", "smallNets", "goals", "tires", "sticksOnIce"],

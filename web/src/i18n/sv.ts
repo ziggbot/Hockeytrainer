@@ -8,17 +8,19 @@ import { SPORT_ID, type SportId } from "../sport/id";
 const BY_SPORT = {
   hockey: {
     clubName: "Färjestad BK",
+    icon: "🏒",
     slotTime: "Istid",
     openLive: "Öppna rinkläget",
     areas: { full: "Helplan", half: "Halvplan", third: "Zon", station: "Station" }
   },
   innebandy: {
     clubName: "Herrhagens Innebandy",
+    icon: "🏑",
     slotTime: "Halltid",
     openLive: "Öppna planläget",
     areas: { full: "Helplan", half: "Halvplan", third: "Tredjedel", station: "Kvartsplan" }
   }
-} satisfies Record<SportId, { clubName: string; slotTime: string; openLive: string; areas: Record<Area, string> }>;
+} satisfies Record<SportId, { clubName: string; icon: string; slotTime: string; openLive: string; areas: Record<Area, string> }>;
 
 const T = BY_SPORT[SPORT_ID];
 
@@ -99,6 +101,8 @@ export const sv = {
   ui: {
     appName: "Tränarappen",
     clubName: T.clubName,
+    /** The sport's stick, for practices and the Träna tab. */
+    sportIcon: T.icon,
     common: {
       today: "Idag",
       tomorrow: "Imorgon",

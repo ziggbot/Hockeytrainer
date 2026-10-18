@@ -236,6 +236,14 @@ a[role="link"] {
   color: var(--danger);
 }
 
+/* Floorball app (Herrhagens Innebandy): the club's orange-red from its
+   crest instead of Färjestad green. Set by main.tsx from the sport pack. */
+:root[data-sport="innebandy"] {
+  --cta: #e2602c;
+  --cta-strong: #c24e1f;
+  --cta-shadow: rgba(226, 96, 44, 0.3);
+}
+
 /* ── Primary button ─────────────────────────────────────────── */
 
 .cta {

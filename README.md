@@ -2,6 +2,8 @@
 
 Plan and run youth ice hockey practices from the club's season plan. Swedish UI, works rink-side with no signal. Product spec: [`SPEC_hockey.md`](SPEC_hockey.md).
 
+**Floorball too:** the same code builds *Tränarappen Innebandy* for Herrhagens Innebandy (`VITE_SPORT=innebandy`, spec [`SPEC_innebandy.md`](SPEC_innebandy.md), decision [`0003`](docs/decisions/0003-sport-packs.md)): SIU levels Grön/Blå/Röd, 42 own floorball drills, quarter-court stations with 3 v 3 as station D, and an injury-prevention start in every plan.
+
 Design "Isen" (see `docs/decisions/0002-design-b-isen.md`): white cards on light grey, Inter + Barlow Condensed, the club crest top left, one Färjestad-green **"Nu kör vi"** button, colour + letter per station.
 
 ## Run it
@@ -12,6 +14,8 @@ npm install
 npm run dev        # http://localhost:5173 (and on your LAN for testing on a phone)
 npm test           # unit tests
 npm run build      # typecheck + production build (PWA with offline precache)
+npm run dev:innebandy     # the floorball app
+npm run build:innebandy
 ```
 
 **Live app (Render, deploys from `claude/kind-gauss-8r4pib`):** https://tranarappen-web.onrender.com/ — set up from `render.yaml` (a `web/vercel.json` also exists). No environment variables are needed yet.
@@ -50,7 +54,7 @@ The preview routes in memory and has no service worker (the sandbox forbids it),
 
 ## Before the pilot
 
-- **Content review:** a club coach should read every seed drill (`web/src/content/drills.ts`) and the season plans (`web/src/content/curricula.ts`). Both are app-written drafts, not federation guidance. The library needs roughly 10–60 more drills to reach the spec's 50–100.
+- **Content review:** a club coach should read every seed drill and the season plans (`web/src/sport/<sport>/drills.ts`, `curricula.ts`) — a hockey coach for the hockey pack, a floorball coach for the floorball pack. Both are app-written drafts, not federation guidance. The library needs roughly 10–60 more drills to reach the spec's 50–100.
 - **Backend:** create a Supabase project in an EU region, then add auth (magic link), club/team/membership with row-level security, and sync. See `docs/decisions/0001-web-pwa-local-first.md`.
 - **Device check:** rink mode on an iPhone home-screen install (wake lock, timer audio in silent mode).
 
@@ -59,10 +63,10 @@ The preview routes in memory and has no service worker (the sandbox forbids it),
 ```
 web/src/
   domain/      pure TS: types, planner, curriculum weeks, equipment, schedule, share links (+ tests)
-  content/     seed drills, curricula, session templates (Swedish)
+  sport/       one pack per sport (hockey, innebandy): seed drills, curricula, templates, session shape (+ tests)
   store/       local-first state (localStorage) and actions
   i18n/        Swedish strings (sv.ts) + date formatting
-  components/  shared UI (nav, checkbox, rink diagram, sheets, stepper)
+  components/  shared UI (nav, checkbox, rink and court diagrams, sheets, stepper)
   screens/     Home, Session, RinkMode, DrillLibrary/Detail/Editor, Season, TeamSettings, SharedSession, Onboarding
-  design/      global.css — the FitBlueprint-style design tokens and components
+  design/      global.css — design B "Isen" tokens and components
 ```

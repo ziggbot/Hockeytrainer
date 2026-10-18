@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:innebandy": "VITE_SPORT=innebandy vite",
     "build": "tsc -b && vite build",
+    "build:innebandy": "VITE_SPORT=innebandy npm run build",
     "preview": "vite preview --host",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

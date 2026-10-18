@@ -4,8 +4,12 @@ import { registerSW } from "virtual:pwa-register";
 import { App } from "./App";
 import { IS_ARTIFACT } from "./platform";
 import { toISODate } from "./domain/dates";
+import { SPORT } from "./sport";
 import { refreshUntouchedPlans, snapOffGridPlans } from "./store/actions";
 import "./design/global.css";
+
+// Per-sport colours (global.css: :root[data-sport]).
+document.documentElement.dataset.sport = SPORT.id;
 
 // Precache the app shell so rink mode opens with no signal in the arena.
 // (The claude.ai preview can't run service workers.)

@@ -5,17 +5,28 @@ import { VitePWA } from "vite-plugin-pwa";
 // `--mode artifact` builds the claude.ai preview (scripts/build-artifact.mjs):
 // no service worker (the sandbox forbids it) and every asset inlined, so the
 // result can be folded into one HTML file.
+//
+// VITE_SPORT=innebandy builds the floorball app from the same code (see
+// src/sport/); without it, the hockey app.
+// (Node's `process`, declared here so the config needs no @types/node.)
+declare const process: { env: Record<string, string | undefined> };
+const FLOORBALL = process.env.VITE_SPORT === "innebandy";
+const APP_NAME = FLOORBALL ? "Tränarappen Innebandy" : "Tränarappen";
+
 export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
+    { name: "app-name", transformIndexHtml: (html: string) => html.replaceAll("Tränarappen", APP_NAME) },
     VitePWA({
       disable: mode === "artifact",
       registerType: "autoUpdate",
       includeAssets: ["icon.svg", "apple-touch-icon.png"],
       manifest: {
-        name: "Tränarappen",
-        short_name: "Tränarappen",
-        description: "Planera och kör hockeyträningen – även utan täckning i hallen.",
+        name: APP_NAME,
+        short_name: FLOORBALL ? "Innebandy" : "Tränarappen",
+        description: FLOORBALL
+          ? "Planera och kör innebandyträningen – även utan täckning i hallen."
+          : "Planera och kör hockeyträningen – även utan täckning i hallen.",
         theme_color: "#eef2f6",
         background_color: "#eef2f6",
         display: "standalone",

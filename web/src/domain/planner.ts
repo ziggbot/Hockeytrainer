@@ -90,6 +90,8 @@ export function allocate(total: number, stations = STATION_COUNT, shape: Session
 
 /** Which drills fill each slot of the standard shape. */
 export interface Blueprint {
+  /** Opens the warm-up (the sport's injury-prevention drill). */
+  prevention?: string;
   warmup?: string;
   /** All stations of the rotation, match station included. */
   stations: string[];
@@ -101,7 +103,12 @@ export interface Blueprint {
 export function assemble(bp: Blueprint, minutes: number, shape: SessionShape = SPORT.shape): PartDraft[] {
   const a = allocate(minutes, bp.stations.length || STATION_COUNT, shape);
   const parts: PartDraft[] = [];
-  if (bp.warmup && a.warmup > 0) parts.push({ type: "drill", drillId: bp.warmup, minutes: a.warmup });
+  if (bp.warmup && a.warmup > 0) {
+    // Injury-prevention start, then the warm-up drill for the rest.
+    const prevention = bp.prevention && a.warmup > STEP ? STEP : 0;
+    if (prevention) parts.push({ type: "drill", drillId: bp.prevention!, minutes: prevention });
+    parts.push({ type: "drill", drillId: bp.warmup, minutes: a.warmup - prevention });
+  }
   if (a.perStation > 0 && bp.stations.length >= 2) {
     parts.push({ type: "gather", minutes: a.gather });
     parts.push({ type: "stations", drillIds: bp.stations, minutesPerStation: a.perStation, freeZone: shape.freeZone });
@@ -176,6 +183,10 @@ export const templateDrillIds = (t: SessionTemplate) => [t.warmup, ...t.extras, 
 /** The match for the last station, if the library has it. */
 const matchStation = (drills: Drill[], shape: SessionShape) =>
   drills.some((d) => d.id === shape.matchStationId) ? shape.matchStationId : undefined;
+
+/** The injury-prevention opener, if the sport has one and the library has it. */
+const preventionDrill = (drills: Drill[], shape: SessionShape) =>
+  shape.prevention && drills.some((d) => d.id === shape.prevention) ? shape.prevention : undefined;
 
 /** Templates usable for this team, best match first. */
 export function matchingTemplates(ctx: Pick<PlanContext, "ageGroup" | "focus" | "templates" | "drills">): SessionTemplate[] {
@@ -290,12 +301,13 @@ export function suggestPlan(ctx: PlanContext): PlanSuggestion {
     const t = templates[ctx.variant];
     const c = candidates(ctx, 0);
     const match = matchStation(ctx.drills, shapeOf(ctx));
-    const used = new Set([...templateDrillIds(t), ...(match ? [match] : [])]);
+    const prevention = preventionDrill(ctx.drills, shapeOf(ctx));
+    const used = new Set([...templateDrillIds(t), ...(match ? [match] : []), ...(prevention ? [prevention] : [])]);
     // Without the match drill, a library station takes its place.
     const stations = [...t.stations, ...(match ? [match] : takeDistinct(c.stations, 1, used))];
     // Long slots may need more whole-group drills than the template lists.
     const fill = takeDistinct(c.extras, MAX_EXTRAS, used);
-    const bp: Blueprint = { warmup: t.warmup, stations, extras: [...t.extras, ...fill], game: t.game };
+    const bp: Blueprint = { prevention, warmup: t.warmup, stations, extras: [...t.extras, ...fill], game: t.game };
     return { title: t.title, focus: t.focus, parts: assemble(bp, ctx.minutes, shapeOf(ctx)), templateId: t.id };
   }
   return generatePlan(ctx, ctx.variant - templates.length);
@@ -308,7 +320,8 @@ export function suggestPlan(ctx: PlanContext): PlanSuggestion {
 export function generatePlan(ctx: PlanContext, seed: number): PlanSuggestion {
   const c = candidates(ctx, seed);
   const match = matchStation(ctx.drills, shapeOf(ctx));
-  const used = new Set<string>(match ? [match] : []);
+  const prevention = preventionDrill(ctx.drills, shapeOf(ctx));
+  const used = new Set<string>([...(match ? [match] : []), ...(prevention ? [prevention] : [])]);
   const warmup = firstNotIn(c.warmups, used);
   if (warmup) used.add(warmup);
   const skill = takeDistinct(c.stations, match ? STATION_COUNT - 1 : STATION_COUNT, used);
@@ -316,5 +329,5 @@ export function generatePlan(ctx: PlanContext, seed: number): PlanSuggestion {
   const game = firstNotIn(c.games, used);
   if (game) used.add(game);
   const extras = takeDistinct(c.extras, MAX_EXTRAS, used);
-  return { focus: c.focus, parts: assemble({ warmup, stations, extras, game }, ctx.minutes, shapeOf(ctx)) };
+  return { focus: c.focus, parts: assemble({ prevention, warmup, stations, extras, game }, ctx.minutes, shapeOf(ctx)) };
 }

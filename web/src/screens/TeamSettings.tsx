@@ -137,7 +137,7 @@ export function TeamSettings() {
         <ul className="rows">
           {state.teams.map((x) => (
             <li key={x.id} className="row row--compact">
-              <span className="row__icon">🏒</span>
+              <span className="row__icon">{S.ui.sportIcon}</span>
               <span className="row__main">
                 <div className="row__title">{x.name}</div>
                 <div className="row__sub">{SPORT.ageGroups.find((a) => a.id === x.ageGroupId)?.name}</div>

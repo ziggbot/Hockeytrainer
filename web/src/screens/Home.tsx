@@ -75,7 +75,7 @@ export function Home() {
               {slots.map((slot) => {
                 const s = slot.session;
                 const count = s ? drillIdsOf(s.parts).length : 0;
-                const icon = s?.focus?.[0] ? S.skillIcons[s.focus[0]] : "🏒";
+                const icon = s?.focus?.[0] ? S.skillIcons[s.focus[0]] : S.ui.sportIcon;
                 return (
                   <li key={`${slot.date} ${slot.start}`}>
                     <div

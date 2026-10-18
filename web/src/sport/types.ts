@@ -9,6 +9,8 @@ import type { SportId } from "./id";
 export interface SessionShape {
   /** Base warm-up. 5 minutes left over go here while it is under 10. */
   warmup: number;
+  /** Drill that opens every plan with 5 of the warm-up minutes (injury prevention). */
+  prevention?: string;
   /** Gathering and splitting into station groups, before the rotation. */
   gather: number;
   /** The plain game that is always the last station of the rotation. */
@@ -25,6 +27,8 @@ export interface SportPack {
   storagePrefix: string;
   /** Club crest in public/, shown top left (not in the claude.ai preview). */
   logo: string;
+  /** Crest size in the header, px. */
+  logoSize: [number, number];
   /** In display order. */
   skills: Skill[];
   areas: Area[];

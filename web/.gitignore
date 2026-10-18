@@ -8,3 +8,4 @@ dev-dist/
 .vercel/
 *.tsbuildinfo
 dist-artifact/
+dist-artifact-innebandy/

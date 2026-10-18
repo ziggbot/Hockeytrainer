@@ -50,6 +50,6 @@ export default defineConfig(({ mode }) => ({
   ],
   server: { port: 5173, host: true },
   ...(mode === "artifact" && {
-    build: { outDir: "dist-artifact", assetsInlineLimit: Number.MAX_SAFE_INTEGER, cssCodeSplit: false }
+    build: { outDir: FLOORBALL ? "dist-artifact-innebandy" : "dist-artifact", assetsInlineLimit: Number.MAX_SAFE_INTEGER, cssCodeSplit: false }
   })
 }));

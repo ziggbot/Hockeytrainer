@@ -52,7 +52,7 @@ Simple, clear and usable rink-side beats feature-rich. Keep to these patterns:
 - `npm test` — Vitest unit tests (planner, curriculum weeks, equipment, share links, schedule).
 - `npm run build` — `tsc -b && vite build`. Run it before committing TS changes.
 - `npm run format` — Prettier (config in `web/.prettierrc.json`).
-- `npm run dev:innebandy` / `npm run build:innebandy` — the floorball app. `VITE_SPORT=innebandy npm run build:artifact` builds its preview (`dist-artifact/tranarappen-innebandy.html`).
+- `npm run dev:innebandy` / `npm run build:innebandy` — the floorball app. `VITE_SPORT=innebandy npm run build:artifact` builds its preview (`dist-artifact-innebandy/tranarappen-innebandy.html`).
 - `npm run build:artifact` — single-file preview for claude.ai (`--mode artifact`: memory router, no service worker, assets inlined). Set `VITE_SHARE_BASE` to the artifact URL so share links open the preview. Mode-specific code lives behind `IS_ARTIFACT` in `web/src/platform.ts`.
 - Never use `window.confirm`/`prompt`/`alert`: they are blocked in sandboxed frames. Use `ConfirmButton` (two taps) or an in-page notice.
 

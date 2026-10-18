@@ -1,6 +1,6 @@
 // Builds the claude.ai preview as ONE self-contained HTML file:
 //   npm run build:artifact            → dist-artifact/tranarappen.html
-//   VITE_SPORT=innebandy npm run build:artifact → dist-artifact/tranarappen-innebandy.html
+//   VITE_SPORT=innebandy npm run build:artifact → dist-artifact-innebandy/tranarappen-innebandy.html
 //   VITE_SHARE_BASE=<artifact url> npm run build:artifact   (share links point at the preview)
 //
 // The artifact host wraps the file in its own <html>/<head>/<body>, allows
@@ -11,9 +11,11 @@ import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const root = new URL("..", import.meta.url).pathname;
+const floorball = process.env.VITE_SPORT === "innebandy";
+const outDir = floorball ? "dist-artifact-innebandy" : "dist-artifact";
 execSync("npx vite build --mode artifact", { cwd: root, stdio: "inherit" });
 
-const assets = join(root, "dist-artifact", "assets");
+const assets = join(root, outDir, "assets");
 const files = readdirSync(assets);
 const pick = (ext) => {
   const found = files.filter((f) => f.endsWith(ext));
@@ -27,7 +29,6 @@ const css = pick(".css").replace(/,\s*url\(data:font\/woff;base64,[^)]*\) format
 // "</script" inside the bundle would end the inline <script> early.
 const js = pick(".js").replace(/<\/script/gi, "<\\/script");
 
-const floorball = process.env.VITE_SPORT === "innebandy";
 const html = [
   `<title>${floorball ? "Tränarappen Innebandy" : "Tränarappen"}</title>`,
   '<meta name="theme-color" content="#eef2f6">',
@@ -37,6 +38,6 @@ const html = [
   ""
 ].join("\n");
 
-const out = join(root, "dist-artifact", floorball ? "tranarappen-innebandy.html" : "tranarappen.html");
+const out = join(root, outDir, floorball ? "tranarappen-innebandy.html" : "tranarappen.html");
 writeFileSync(out, html);
 console.log(`\n${out} (${(html.length / 1024).toFixed(0)} KB)`);

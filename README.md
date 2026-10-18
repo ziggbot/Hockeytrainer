@@ -20,7 +20,7 @@ npm run build:innebandy
 
 **Live app (Render, deploys from `claude/kind-gauss-8r4pib`):** https://tranarappen-web.onrender.com/ — set up from `render.yaml` (a `web/vercel.json` also exists). No environment variables are needed yet.
 
-**Preview on claude.ai (private):** https://claude.ai/artifact/UgPj73QSapgQk8geGaoRii. It is built as one self-contained HTML file:
+**Preview on claude.ai (private):** https://claude.ai/artifact/UgPj73QSapgQk8geGaoRii (hockey), https://claude.ai/artifact/Jqh7WLWvEcRJYjqaV64oEe (floorball). It is built as one self-contained HTML file:
 
 ```bash
 VITE_SHARE_BASE=https://claude.ai/artifact/UgPj73QSapgQk8geGaoRii npm run build:artifact   # → web/dist-artifact/tranarappen.html

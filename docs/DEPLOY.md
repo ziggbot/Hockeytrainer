@@ -141,6 +141,7 @@ om klubben kräver det.
 | `AUTH_RATE_LIMIT_MAX` | nej | `10` | Inloggningsförsök per IP och minut. |
 | `PG_POOL_MAX` | nej | `5` | Max antal databasanslutningar. |
 | `PORT` | nej | `3000` | Sätts automatiskt av Render. |
+| `COOKIE_SECURE` | nej | som `NODE_ENV` | Sätt `false` bara för lokal test av produktionsbygget över http. |
 
 ## 7. Lokal utveckling
 

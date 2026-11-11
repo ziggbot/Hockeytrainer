@@ -27,7 +27,19 @@ self.addEventListener('message', (event) => {
         return false;
       }
     });
-    event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(sameOrigin)).catch(() => undefined));
+    event.waitUntil(
+      caches
+        .open(CACHE)
+        .then(async (cache) => {
+          await cache.addAll(sameOrigin);
+          // Drop bundles from earlier deploys so the cache does not grow forever.
+          const keep = new Set(sameOrigin);
+          for (const req of await cache.keys()) {
+            if (new URL(req.url).pathname.startsWith('/assets/') && !keep.has(req.url)) await cache.delete(req);
+          }
+        })
+        .catch(() => undefined),
+    );
   }
 });
 

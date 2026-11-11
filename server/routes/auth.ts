@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import {
+  LoginThrottle,
   clearSessionCookie,
   createSession,
   hashPassword,
@@ -11,7 +12,7 @@ import {
 } from '../auth.js';
 import type { Client, Queryable } from '../db.js';
 import { tx } from '../db.js';
-import { badRequest, conflict, forbidden, unauthorized } from '../errors.js';
+import { badRequest, conflict, forbidden, HttpError, unauthorized } from '../errors.js';
 import { emailSchema, nameSchema, passwordSchema, z } from '../validation.js';
 
 // Used to keep login timing similar whether or not the e-mail exists.
@@ -68,6 +69,7 @@ export async function createClubWithAdmin(db: Queryable, userId: string, name: s
 export default async function authRoutes(app: FastifyInstance) {
   const { db, config } = app;
   const AUTH_RATE_LIMIT = { rateLimit: { max: config.authRateLimitMax, timeWindow: '1 minute' } };
+  const throttle = new LoginThrottle();
 
   app.post('/auth/register', { config: AUTH_RATE_LIMIT }, async (req, reply) => {
     const body = z
@@ -118,13 +120,20 @@ export default async function authRoutes(app: FastifyInstance) {
 
   app.post('/auth/login', { config: AUTH_RATE_LIMIT }, async (req, reply) => {
     const body = z.object({ email: emailSchema, password: z.string().min(1).max(200) }).parse(req.body);
+    if (throttle.isBlocked(body.email)) {
+      throw new HttpError(429, 'För många misslyckade inloggningar. Vänta 15 minuter eller be klubbadmin om en återställningslänk.');
+    }
     const { rows } = await db.query<{ id: string; password_hash: string }>(
       'SELECT id, password_hash FROM users WHERE lower(email) = $1',
       [body.email],
     );
     const user = rows[0];
     const ok = await verifyPassword(body.password, user?.password_hash ?? DUMMY_HASH);
-    if (!user || !ok) throw unauthorized('Fel e-post eller lösenord.');
+    if (!user || !ok) {
+      throttle.fail(body.email);
+      throw unauthorized('Fel e-post eller lösenord.');
+    }
+    throttle.reset(body.email);
     const token = await createSession(db, user.id);
     setSessionCookie(reply, token, config.cookieSecure);
     return { ok: true };

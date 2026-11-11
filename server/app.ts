@@ -26,7 +26,8 @@ declare module 'fastify' {
 export async function buildApp(opts: { pool: Pool; config: Config; logger?: boolean }) {
   const app = Fastify({
     logger: opts.logger ?? true,
-    // Render terminates TLS in front of the service; trust X-Forwarded-* for client IPs (rate limiting).
+    // Render terminates TLS in front of the service. Client IPs from X-Forwarded-For are
+    // best effort only (forgeable), so logins are additionally throttled per account.
     trustProxy: true,
     bodyLimit: 256 * 1024,
   });

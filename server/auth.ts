@@ -86,3 +86,42 @@ export function requireUser(req: FastifyRequest): AuthUser {
   if (!req.user) throw unauthorized();
   return req.user;
 }
+
+/**
+ * Per-account throttle for failed logins. IP-based rate limiting alone is weak behind a proxy
+ * (X-Forwarded-For can be forged), so we also cap failures per e-mail address.
+ * In-memory is fine for a single Render instance.
+ */
+export class LoginThrottle {
+  private failures = new Map<string, { count: number; resetAt: number }>();
+  constructor(
+    private maxFailures = 10,
+    private windowMs = 15 * 60_000,
+  ) {}
+
+  isBlocked(email: string, now = Date.now()): boolean {
+    const entry = this.failures.get(email);
+    if (!entry) return false;
+    if (entry.resetAt <= now) {
+      this.failures.delete(email);
+      return false;
+    }
+    return entry.count >= this.maxFailures;
+  }
+
+  fail(email: string, now = Date.now()): void {
+    const entry = this.failures.get(email);
+    if (!entry || entry.resetAt <= now) {
+      this.failures.set(email, { count: 1, resetAt: now + this.windowMs });
+    } else {
+      entry.count += 1;
+    }
+    if (this.failures.size > 10_000) {
+      for (const [key, e] of this.failures) if (e.resetAt <= now) this.failures.delete(key);
+    }
+  }
+
+  reset(email: string): void {
+    this.failures.delete(email);
+  }
+}

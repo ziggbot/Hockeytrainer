@@ -102,6 +102,19 @@ describe('auth', () => {
     assert.match(short.json.error, /Lösenord/);
   });
 
+  test('repeated wrong passwords lock the account for a while, even from new IPs', async () => {
+    const email = uniqueEmail('brute');
+    const c = new Client(app);
+    await c.post('/api/auth/register', { name: 'B', email, password: 'hemligt123', clubName: 'K' });
+    const attacker = new Client(app);
+    for (let i = 0; i < 10; i++) {
+      const res = await attacker.req('POST', '/api/auth/login', { email, password: `fel${i}` }, { 'x-forwarded-for': `10.0.0.${i}` });
+      assert.equal(res.status, 401);
+    }
+    const blocked = await attacker.req('POST', '/api/auth/login', { email, password: 'hemligt123' }, { 'x-forwarded-for': '10.9.9.9' });
+    assert.equal(blocked.status, 429);
+  });
+
   test('cross-origin writes are refused', async () => {
     const c = new Client(app);
     const res = await c.req('POST', '/api/auth/login', { email: 'a@b.se', password: 'x' }, { origin: 'https://evil.example' });

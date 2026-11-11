@@ -1,0 +1,25 @@
+# Render Blueprint: one web service (API + web app) in Frankfurt, database on Neon.
+# Create it in Render: New → Blueprint → pick this repository. See docs/DEPLOY.md.
+services:
+  - type: web
+    name: hockeytrainer
+    runtime: node
+    region: frankfurt
+    plan: free
+    # NODE_ENV=production also applies during the build, so dev dependencies
+    # (TypeScript, Vite) must be installed explicitly.
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: node dist/server/index.js
+    # Liveness only; it never queries the database so Neon can scale to zero.
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      # Neon pooled connection string (host contains "-pooler"). Render asks for it once.
+      - key: DATABASE_URL
+        sync: false
+      # Set to "false" once your clubs exist, to stop anyone from creating new clubs.
+      - key: ALLOW_CLUB_SIGNUP
+        value: "true"

@@ -7,9 +7,28 @@ export type Pool = pg.Pool;
 export type Client = pg.PoolClient;
 export type Queryable = Pick<pg.Pool, 'query'> | Pick<pg.PoolClient, 'query'>;
 
+/**
+ * Neon's connection strings use sslmode=require. node-postgres currently treats that as
+ * verify-full but warns that pg v9 will switch to libpq semantics (no certificate check).
+ * Pin verify-full so the server certificate is always verified.
+ */
+export function normalizeDatabaseUrl(connectionString: string): string {
+  let url: URL;
+  try {
+    url = new URL(connectionString);
+  } catch {
+    return connectionString;
+  }
+  const mode = url.searchParams.get('sslmode');
+  if (mode && ['require', 'prefer', 'verify-ca'].includes(mode)) {
+    url.searchParams.set('sslmode', 'verify-full');
+  }
+  return url.toString();
+}
+
 export function createPool(connectionString: string): pg.Pool {
   const pool = new pg.Pool({
-    connectionString,
+    connectionString: normalizeDatabaseUrl(connectionString),
     max: Number(process.env.PG_POOL_MAX ?? 5),
     // Neon suspends idle compute; let idle connections go so the pool reconnects cleanly.
     idleTimeoutMillis: 30_000,

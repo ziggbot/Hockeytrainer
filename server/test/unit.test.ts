@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { hashPassword, verifyPassword } from '../auth.js';
+import { normalizeDatabaseUrl } from '../db.js';
 import { aggregateEquipment } from '../equipment.js';
 import { ageSpan, suggestPractice, type CandidateDrill } from '../planner.js';
 
@@ -56,4 +57,14 @@ test('password hashing round-trips and rejects wrong passwords', async () => {
   assert.equal(await verifyPassword('hemligt123', h), true);
   assert.equal(await verifyPassword('hemligt124', h), false);
   assert.equal(await verifyPassword('x', 'garbage'), false);
+});
+
+test('Neon connection strings are pinned to certificate verification', () => {
+  const neon = 'postgresql://u:p%40ss@ep-x-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+  const out = new URL(normalizeDatabaseUrl(neon));
+  assert.equal(out.searchParams.get('sslmode'), 'verify-full');
+  assert.equal(out.password, 'p%40ss');
+  assert.equal(out.hostname, 'ep-x-pooler.eu-central-1.aws.neon.tech');
+  const local = 'postgresql://postgres@localhost:5432/db';
+  assert.equal(normalizeDatabaseUrl(local), local);
 });

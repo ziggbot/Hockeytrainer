@@ -16,7 +16,12 @@ import { TeamSettings } from "./screens/TeamSettings";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  // Braces matter: window.scrollTo returns a Promise in current Chrome, and an
+  // effect that returns anything but a cleanup function crashes React on the
+  // next navigation (blank screen).
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
   return null;
 }
 
@@ -56,6 +61,7 @@ export function App() {
           <Route path="/pass/:id/rink" element={<RinkRoute />} />
           <Route path="/ovningar" element={<DrillLibrary />} />
           <Route path="/ovningar/ny" element={<DrillEditor />} />
+          <Route path="/ovningar/rita" element={<DrillEditor startDrawing />} />
           <Route path="/ovningar/:id" element={<DrillDetail />} />
           <Route path="/ovningar/:id/andra" element={<DrillEditor />} />
           <Route path="/sasong" element={<Season />} />

@@ -1,26 +1,28 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import { App } from './App';
-import './styles.css';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { registerSW } from "virtual:pwa-register";
+import { App } from "./App";
+import { IS_ARTIFACT } from "./platform";
+import { toISODate } from "./domain/dates";
+import { SPORT } from "./sport";
+import { refreshUntouchedPlans, snapOffGridPlans } from "./store/actions";
+import "./design/global.css";
 
-createRoot(document.getElementById('root')!).render(
+// Per-sport colours (global.css: :root[data-sport]).
+document.documentElement.dataset.sport = SPORT.id;
+
+// Precache the app shell so rink mode opens with no signal in the arena.
+// (The claude.ai preview can't run service workers.)
+if (!IS_ARTIFACT) registerSW({ immediate: true });
+
+// Plans made by an older planner version (e.g. before the 4-station shape)
+// are rebuilt if nobody has edited them yet; the rest are put on the
+// 5-minute grid.
+refreshUntouchedPlans(toISODate(new Date()));
+snapOffGridPlans();
+
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
-  </StrictMode>,
+  </StrictMode>
 );
-
-// Offline support for the rink: the service worker keeps the app shell on the phone.
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-  window.addEventListener('load', async () => {
-    try {
-      await navigator.serviceWorker.register('/sw.js');
-      const reg = await navigator.serviceWorker.ready;
-      const urls = [...document.querySelectorAll<HTMLScriptElement | HTMLLinkElement>('script[src], link[rel="stylesheet"], link[rel="modulepreload"]')]
-        .map((el) => ('src' in el ? el.src : el.href))
-        .filter(Boolean);
-      reg.active?.postMessage({ type: 'cache-urls', urls });
-    } catch {
-      // Without a service worker the app still works online.
-    }
-  });
-}

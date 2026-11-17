@@ -1,46 +1,72 @@
-# Hockeytrainer
+# Tränarappen (working name)
 
-Gratis träningsplanering för ungdomsishockey. Appen kopplar klubbens utvecklingsplan till kvällens
-träning och fungerar vid rinken, även utan nät. Bakgrund och mål finns i [SPEC_hockey.md](SPEC_hockey.md).
+Plan and run youth ice hockey practices from the club's season plan. Swedish UI, works rink-side with no signal. Product spec: [`SPEC_hockey.md`](SPEC_hockey.md).
 
-**Driftsättning (Render + Neon), roller och backup:** se [docs/DEPLOY.md](docs/DEPLOY.md).
+**Floorball too:** the same code builds *Tränarappen Innebandy* for Herrhagens Innebandy (`VITE_SPORT=innebandy`, spec [`SPEC_innebandy.md`](SPEC_innebandy.md), decision [`0003`](docs/decisions/0003-sport-packs.md)): SIU levels Grön/Blå/Röd, 42 own floorball drills, quarter-court stations with 3 v 3 as station D, and an injury-prevention start in every plan.
 
-## Det här finns
+Design "Isen" (see `docs/decisions/0002-design-b-isen.md`): white cards on light grey, Inter + Barlow Condensed, the club crest top left, one Färjestad-green **"Nu kör vi"** button, colour + letter per station.
 
-- **Klubb och roller:** klubbadmin, lagledare och tränare. Personer läggs till med inbjudningslänkar
-  som används en gång och ingen e-posttjänst behövs. Admin skapar återställningslänkar för glömda lösenord.
-- **Utvecklingsplan:** åldersgrupper med målfärdigheter och säsongsblock med 1–2 fokusområden.
-- **Övningsbank:** 16 startövningar (egenskrivna, ska granskas av klubbens tränare) plus klubbens
-  och egna övningar. Filtrera på färdighet, ålder, tid och isyta.
-- **Planera träning:** ett förslag utifrån lagets pågående block fyller istiden. Ändra ordning,
-  minuter och stationer. Totaltiden kontrolleras mot istiden.
-- **Utrustningslista** genereras ur övningarna.
-- **Rinkläge:** stor timer, coachningspunkter, stationsvy och avbockning av utrustning.
-  Skärmen hålls tänd och allt fungerar offline för nästa 7 dagars träningar.
-- **Delningslänk** så att assisterande ledare kan läsa utan konto.
-- **Anteckningar** efter träningen köas på telefonen utan nät och synkas sedan.
-- **Adminöversikt** visar per lag vad som planerats och vilka fokusområden som täckts.
-- **Backup:** Neons historik, nattlig krypterad `pg_dump` via GitHub Actions och JSON-export för klubbadmin.
-
-Spelaruppgifter lagras inte (GDPR). Konton innehåller bara namn och e-post.
-
-## Teknik
-
-- `server/`: Node 22, Fastify, PostgreSQL via `pg`. Migreringarna i `server/migrations.ts` körs vid start.
-- `web/`: React + Vite (PWA). All text finns i `web/src/i18n/sv.ts`, redo för fler språk.
-- Specen föreslog Expo (React Native). Valet blev en installerbar webbapp (PWA) i stället,
-  eftersom den kan publiceras direkt på Render och fungerar på iOS, Android och dator utan appbutiker.
+## Run it
 
 ```bash
-npm ci
-npm run typecheck
-npm test        # integrationstester mot riktig Postgres (TEST_DATABASE_URL)
-npm run build
+cd web
+npm install
+npm run dev        # http://localhost:5173 (and on your LAN for testing on a phone)
+npm test           # unit tests
+npm run build      # typecheck + production build (PWA with offline precache)
+npm run dev:innebandy     # the floorball app
+npm run build:innebandy
 ```
 
-## Inte gjort än (från specen)
+**Live app (Render, deploys from `claude/kind-gauss-8r4pib`):** https://tranarappen-web.onrender.com/ — set up from `render.yaml` (a `web/vercel.json` also exists). No environment variables are needed yet.
 
-- iCal-import av träningstider
-- Uppladdning av övningsdiagram (i dag en https-länk till en bild; Renders disk töms vid omstart)
-- Inloggning med e-postlänk (kräver en e-posttjänst)
-- Godkännande av övningar för att dela dem mellan klubbar
+**Preview on claude.ai (private):** https://claude.ai/artifact/UgPj73QSapgQk8geGaoRii (hockey), https://claude.ai/artifact/Jqh7WLWvEcRJYjqaV64oEe (floorball). It is built as one self-contained HTML file:
+
+```bash
+VITE_SHARE_BASE=https://claude.ai/artifact/UgPj73QSapgQk8geGaoRii npm run build:artifact   # → web/dist-artifact/tranarappen.html
+```
+
+The preview routes in memory and has no service worker (the sandbox forbids it), so offline mode, "Add to Home Screen" and the backup download only work on a real deployment. Data is saved in the viewer's browser.
+
+## How it works
+
+1. **First run:** team name, age group (U8–Junior), training days and ice time.
+2. **Träna (home):** header "Tränarappen – <coach name>" (the coach's own name, set at first start or under *Laget*); the next ice time with a suggested plan built from the current **season block** (e.g. U10, weeks 34–41 → *Skridskoteknik*). **Nu kör vi** opens rink mode. *Den här veckan* lists the calendar week, Monday first; the big button still finds the next ice time across the week boundary.
+3. **Session:** running order with clock times, total vs. ice time, edit mode (minutes ±, reorder, swap, add, station rotations, *Nytt förslag*), equipment checklist, notes, share link.
+4. **Rink mode:** tap "Starta passet" once; the screen then follows the clock. The feed scrolls to the running part, a timeline on the right ticks along, and it beeps/vibrates at each new part or station rotation. No taps needed with gloves on. Stations show which group is where (already during the gathering, so the coach can split the groups); each coach can mark *their* station. Ends with quick tags + a note.
+5. **Övningar:** 41 seed drills. Filter by age, skill, ice area and length. Coaches can add their own drills, with a photo of a whiteboard sketch.
+6. **Säsong:** the age group's blocks with focus skills, the current week highlighted, coverage (✓ when a focus skill was trained in a completed session), editable blocks and philosophy, and recent sessions with notes.
+
+## Spec coverage (MVP §5)
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | Auth and club setup | **Not started.** Needs the Supabase EU project. Teams are local for now. |
+| 2 | Curriculum editor | **Partial.** Blocks (name, weeks, 1–2 focus skills) and philosophy are editable per age group. No admin role, fixed age-group list. |
+| 3 | Drill library | **Done (content partial).** 41 own seed drills (spec target 50–100), filters, own drills with image upload. |
+| 4 | Session planner | **Done.** Club base: 5 min warm-up → 5 min gathering/station split → 4 stations (D is always a match against small goals) + free zone in the middle → focus drill (longer ice) → game → closing talk (5 min, 10 from 75 min), all in 5-minute steps. Curated templates first, else generated from block focus; varied across the week. |
+| 5 | Equipment checklist | **Done.** Max across sequential parts, summed across parallel stations, tick-off. |
+| 6 | Rink mode | **Done.** Offline, timer, station view, wake lock. iOS wake-lock behaviour still to verify on a device (spec §9). |
+| 7 | Share link | **Interim.** Read-only snapshot in the URL fragment, no account. Becomes a live token link with the backend. |
+| 8 | Post-session notes | **Local.** Tags + text, append-only. Visible to other coaches once sync exists. |
+| 9 | iCal import | **Not started.** A weekly schedule stands in. Needs a server-side fetch (CORS). |
+| 10 | Admin overview | **Partial.** Per-team block coverage. Club-wide overview needs the backend. |
+
+## Before the pilot
+
+- **Content review:** a club coach should read every seed drill and the season plans (`web/src/sport/<sport>/drills.ts`, `curricula.ts`) — a hockey coach for the hockey pack, a floorball coach for the floorball pack. Both are app-written drafts, not federation guidance. The library needs roughly 10–60 more drills to reach the spec's 50–100.
+- **Backend:** create a Supabase project in an EU region, then add auth (magic link), club/team/membership with row-level security, and sync. See `docs/decisions/0001-web-pwa-local-first.md`.
+- **Device check:** rink mode on an iPhone home-screen install (wake lock, timer audio in silent mode).
+
+## Layout
+
+```
+web/src/
+  domain/      pure TS: types, planner, curriculum weeks, equipment, schedule, share links (+ tests)
+  sport/       one pack per sport (hockey, innebandy): seed drills, curricula, templates, session shape (+ tests)
+  store/       local-first state (localStorage) and actions
+  i18n/        Swedish strings (sv.ts) + date formatting
+  components/  shared UI (nav, checkbox, rink and court diagrams, sheets, stepper)
+  screens/     Home, Session, RinkMode, DrillLibrary/Detail/Editor, Season, TeamSettings, SharedSession, Onboarding
+  design/      global.css — design B "Isen" tokens and components
+```

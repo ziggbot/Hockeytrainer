@@ -1,3 +1,5 @@
 node_modules/
 .DS_Store
 *.log
+# Build output (web/ has its own .gitignore; this catches stray root builds)
+/dist/

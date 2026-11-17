@@ -126,9 +126,14 @@ export function DrillLibrary() {
           </p>
         )}
 
-        <AppLink to="/ovningar/ny" className="btn" style={{ marginTop: 22 }}>
-          + {t.newDrill}
-        </AppLink>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 22 }}>
+          <AppLink to="/ovningar/rita" className="btn">
+            ✏️ {t.drawDrill}
+          </AppLink>
+          <AppLink to="/ovningar/ny" className="btn">
+            + {t.newDrill}
+          </AppLink>
+        </div>
       </main>
       <BottomNav />
     </>

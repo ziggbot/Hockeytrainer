@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import type { Curriculum, Drill, Session, SessionNote, SessionTemplate, Team } from "../domain/types";
+import { cleanSketch } from "../domain/sketch";
 import { SPORT } from "../sport";
 import { readItem, writeItem } from "./storage";
 
@@ -75,7 +76,12 @@ export function normalizeState(raw: unknown): AppState {
     teams,
     activeTeamId: typeof raw.activeTeamId === "string" ? raw.activeTeamId : null,
     curricula: curricula.length > 0 ? curricula : base.curricula,
-    ownDrills: list<Drill>(raw.ownDrills).filter((d) => isObj(d) && typeof d.id === "string" && Array.isArray(d.skills)),
+    ownDrills: list<Drill>(raw.ownDrills)
+      .filter((d) => isObj(d) && typeof d.id === "string" && Array.isArray(d.skills))
+      .map(({ sketch, ...d }) => {
+        const clean = cleanSketch(sketch, SPORT.id);
+        return clean ? { ...d, sketch: clean } : d;
+      }),
     ownTemplates: list<SessionTemplate>(raw.ownTemplates).filter((t) => isObj(t) && Array.isArray(t.stations)),
     sessions,
     notes: list<SessionNote>(raw.notes).filter((n) => isObj(n) && typeof n.sessionId === "string")

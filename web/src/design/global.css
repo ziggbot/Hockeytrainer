@@ -1196,3 +1196,283 @@ textarea.input {
     transition: none;
   }
 }
+
+/* ── Drill sketches ─────────────────────────────────────────── */
+
+.sketch {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(11, 31, 51, 0.08);
+  pointer-events: none;
+}
+
+.sketch--page {
+  margin-top: 16px;
+}
+
+.sketch-open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.rk-sketch {
+  margin: 4px 0 10px;
+}
+
+/* Full-screen editor */
+.sk-editor {
+  user-select: none;
+  -webkit-user-select: none;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: var(--bg);
+}
+
+.sk-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px 6px;
+}
+
+.btn--go {
+  background: var(--cta);
+  border-color: var(--cta);
+  color: var(--on-accent);
+}
+
+.btn--go:active {
+  background: var(--cta-strong);
+}
+
+.sk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 0 12px 6px;
+}
+
+.sk-seg {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.sk-canvas {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding: 0 8px 6px;
+}
+
+.sk-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.sk-svg--select .sk-item {
+  cursor: grab;
+}
+
+.sk-props {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 8px 12px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  scrollbar-width: none;
+}
+
+.sk-props::-webkit-scrollbar,
+.sk-palette::-webkit-scrollbar {
+  display: none;
+}
+
+.sk-props .chip,
+.sk-props .btn {
+  flex-shrink: 0;
+}
+
+.sk-label {
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.sk-text {
+  user-select: text;
+  -webkit-user-select: text;
+  flex: 1 1 140px;
+  min-width: 120px;
+  max-width: 220px;
+}
+
+.sk-remove {
+  margin-left: auto;
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.sk-tools {
+  padding: 6px 0 calc(var(--safe-b) + 4px);
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.sk-colors {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px 4px;
+}
+
+.sk-swatch {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 7px solid var(--surface);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.sk-swatch--on {
+  border-width: 5px;
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+
+.sk-clear {
+  margin-left: auto;
+}
+
+.sk-palette {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  padding: 0 8px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sk-palette__gap {
+  flex: 0 0 1px;
+  margin: 8px 4px;
+  background: var(--line);
+}
+
+.sk-palette + .sk-palette {
+  margin-top: 2px;
+  padding-top: 2px;
+  border-top: 1px solid var(--line);
+}
+
+.sk-tool {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 60px;
+  min-height: 54px;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--ink);
+  scroll-snap-align: start;
+}
+
+.sk-tool--on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.sk-tool__icon {
+  width: 28px;
+  height: 28px;
+  overflow: visible;
+}
+
+.sk-tool__icon--wide {
+  width: 46px;
+  height: 20px;
+  margin: 4px 0;
+}
+
+.sk-tool__label {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (min-width: 720px) {
+  .sk-palette {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}
+
+/* Phone on its side: drawing surface left, tools in a side panel. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .sk-editor {
+    display: grid;
+    grid-template-columns: 1fr minmax(240px, 36%);
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      "canvas head"
+      "canvas bar"
+      "canvas tools"
+      "canvas props";
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+  .sk-head {
+    grid-area: head;
+  }
+  .sk-bar {
+    grid-area: bar;
+  }
+  .sk-canvas {
+    grid-area: canvas;
+    padding: 6px;
+  }
+  .sk-tools {
+    grid-area: tools;
+    overflow-y: auto;
+    border-top: 0;
+  }
+  .sk-palette {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+  .sk-props {
+    grid-area: props;
+    flex-wrap: wrap;
+  }
+}

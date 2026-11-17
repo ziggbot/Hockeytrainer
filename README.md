@@ -34,7 +34,7 @@ The preview routes in memory and has no service worker (the sandbox forbids it),
 2. **Träna (home):** header "Tränarappen – <coach name>" (the coach's own name, set at first start or under *Laget*); the next ice time with a suggested plan built from the current **season block** (e.g. U10, weeks 34–41 → *Skridskoteknik*). **Nu kör vi** opens rink mode. *Den här veckan* lists the calendar week, Monday first; the big button still finds the next ice time across the week boundary.
 3. **Session:** running order with clock times, total vs. ice time, edit mode (minutes ±, reorder, swap, add, station rotations, *Nytt förslag*), equipment checklist, notes, share link.
 4. **Rink mode:** tap "Starta passet" once; the screen then follows the clock. The feed scrolls to the running part, a timeline on the right ticks along, and it beeps/vibrates at each new part or station rotation. No taps needed with gloves on. Stations show which group is where (already during the gathering, so the coach can split the groups); each coach can mark *their* station. Ends with quick tags + a note.
-5. **Övningar:** 41 seed drills. Filter by age, skill, ice area and length. Coaches can add their own drills, with a photo of a whiteboard sketch.
+5. **Övningar:** 41 seed drills. Filter by age, skill, ice area and length. Coaches can add their own drills and **draw them** (*Rita övning*): players in team colours, pucks, cones, nets, obstacles and shooting zones on a full/half rink or zone, with skating, puck-carrying, backwards, pass and shot lines in the usual drill notation (decision [`0004`](docs/decisions/0004-drill-sketches.md)). The sketch shows on the drill page, in rink mode and in shared sessions. A whiteboard photo still works too.
 6. **Säsong:** the age group's blocks with focus skills, the current week highlighted, coverage (✓ when a focus skill was trained in a completed session), editable blocks and philosophy, and recent sessions with notes.
 
 ## Spec coverage (MVP §5)
@@ -43,7 +43,7 @@ The preview routes in memory and has no service worker (the sandbox forbids it),
 |---|---|---|
 | 1 | Auth and club setup | **Not started.** Needs the Supabase EU project. Teams are local for now. |
 | 2 | Curriculum editor | **Partial.** Blocks (name, weeks, 1–2 focus skills) and philosophy are editable per age group. No admin role, fixed age-group list. |
-| 3 | Drill library | **Done (content partial).** 41 own seed drills (spec target 50–100), filters, own drills with image upload. |
+| 3 | Drill library | **Done (content partial).** 41 own seed drills (spec target 50–100), filters, own drills with a drawn sketch or image upload. |
 | 4 | Session planner | **Done.** Club base: 5 min warm-up → 5 min gathering/station split → 4 stations (D is always a match against small goals) + free zone in the middle → focus drill (longer ice) → game → closing talk (5 min, 10 from 75 min), all in 5-minute steps. Curated templates first, else generated from block focus; varied across the week. |
 | 5 | Equipment checklist | **Done.** Max across sequential parts, summed across parallel stations, tick-off. |
 | 6 | Rink mode | **Done.** Offline, timer, station view, wake lock. iOS wake-lock behaviour still to verify on a device (spec §9). |

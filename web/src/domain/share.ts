@@ -1,10 +1,13 @@
 import { ALL_AREAS, ALL_EQUIPMENT, ALL_SKILLS, type Drill, type PartDraft, type Session, type Skill } from "./types";
 import { drillIdsOf, snapToSteps } from "./planner";
+import { cleanSketch } from "./sketch";
+import { SPORT_ID } from "../sport/id";
 
 // Read-only share link (spec §5.7) without a backend: the session snapshot
 // travels in the URL fragment, which browsers never send to the server.
 // Seed drills ship with the app, so only their ids are encoded; the coach's
-// own drills are embedded (without uploaded images, to keep links short).
+// own drills are embedded with their drawn sketches (but without uploaded
+// photos, to keep links short).
 // When the Supabase backend lands this becomes an unguessable token instead.
 
 export interface SharedSession {
@@ -101,9 +104,11 @@ function cleanDrill(d: unknown): Drill | null {
       return item && count !== null ? { item, count } : null;
     })
     .filter((e): e is Drill["equipment"][number] => !!e);
+  const sketch = cleanSketch(o.sketch, SPORT_ID);
   return {
     id,
     title,
+    ...(sketch ? { sketch } : {}),
     description: str(o.description) ?? "",
     coachingPoints: strings(o.coachingPoints),
     skills: skills.length > 0 ? skills : ["gameSense"],

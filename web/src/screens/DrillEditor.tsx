@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BackBar } from "../components/Chrome";
+import { SketchEditor } from "../components/SketchEditor";
+import { SketchView } from "../components/SketchView";
+import type { Sketch, SketchSurface } from "../domain/sketch";
 import { Stepper } from "../components/Stepper";
 import { STEP, roundToStep } from "../domain/planner";
 import type { Area, Drill, DrillKind, EquipmentItem, Skill } from "../domain/types";
@@ -23,8 +26,15 @@ async function imageToDataUrl(file: File, maxSide = 1200): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.8);
 }
 
+/** The drill area that matches what was drawn. */
+const AREA_OF: Record<SketchSurface, Area> = {
+  full: "full",
+  half: "half",
+  zone: SPORT.id === "innebandy" ? "station" : "third"
+};
+
 /** Create or edit a coach's own drill (private to this device until sync exists). */
-export function DrillEditor() {
+export function DrillEditor({ startDrawing = false }: { startDrawing?: boolean }) {
   const { id } = useParams();
   const state = useAppState();
   const navigate = useNavigate();
@@ -51,6 +61,8 @@ export function DrillEditor() {
     existing?.equipment.some((e) => e.item === perItem && e.count === "perPlayer") ?? false
   );
   const [diagram, setDiagram] = useState<string | undefined>(existing?.diagram);
+  const [sketch, setSketch] = useState<Sketch | undefined>(existing?.sketch);
+  const [drawing, setDrawing] = useState(startDrawing && !existing);
   const [error, setError] = useState<string | null>(null);
 
   const toggleSkill = (s: Skill) => setSkills((xs) => (xs.includes(s) ? xs.filter((x) => x !== s) : [...xs, s]));
@@ -82,6 +94,7 @@ export function DrillEditor() {
           }))
       ],
       diagram,
+      ...(sketch ? { sketch } : {}),
       visibility: "private",
       source: "own"
     };
@@ -234,6 +247,21 @@ export function DrillEditor() {
       <div className="field">
         <span className="field__label">{t.diagram}</span>
         <span className="field__hint">{t.diagramHint}</span>
+        {sketch && (
+          <button type="button" className="sketch-open" onClick={() => setDrawing(true)} aria-label={t.editSketch}>
+            <SketchView sketch={sketch} />
+          </button>
+        )}
+        <div style={{ display: "flex", gap: 16, alignItems: "center", marginTop: 10, flexWrap: "wrap" }}>
+          <button type="button" className="btn" onClick={() => setDrawing(true)}>
+            ✏️ {sketch ? t.editSketch : t.draw}
+          </button>
+          {sketch && (
+            <button type="button" className="link link--danger" onClick={() => setSketch(undefined)}>
+              {t.removeSketch}
+            </button>
+          )}
+        </div>
         {diagram && <img src={diagram} alt="" style={{ display: "block", width: "100%", marginTop: 10, borderRadius: 12 }} />}
         <div style={{ display: "flex", gap: 16, alignItems: "center", marginTop: 10, flexWrap: "wrap" }}>
           <input
@@ -256,6 +284,19 @@ export function DrillEditor() {
       <button type="button" className="cta" onClick={save}>
         {S.ui.common.save}
       </button>
+
+      {drawing && (
+        <SketchEditor
+          initial={sketch}
+          onCancel={() => setDrawing(false)}
+          onDone={(next) => {
+            setSketch(next);
+            // A new drill takes its area from what was drawn.
+            if (next && !existing) setIceArea(AREA_OF[next.surface]);
+            setDrawing(false);
+          }}
+        />
+      )}
     </main>
   );
 }

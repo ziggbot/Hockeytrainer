@@ -1,4 +1,5 @@
 import type { Area, DrillKind, EquipmentItem, NoteTag, Skill } from "../domain/types";
+import type { LineEnd, LineKind, MarkerKind, SketchColor, SketchSurface } from "../domain/sketch";
 import { SPORT_ID, type SportId } from "../sport/id";
 
 // Swedish UI strings (spec §6: Swedish first, i18n-ready). Add en/fi/no by
@@ -11,16 +12,46 @@ const BY_SPORT = {
     icon: "🏒",
     slotTime: "Istid",
     openLive: "Öppna rinkläget",
-    areas: { full: "Helplan", half: "Halvplan", third: "Zon", station: "Station" }
+    areas: { full: "Helplan", half: "Halvplan", third: "Zon", station: "Station" },
+    sketch: {
+      puck: "Puck",
+      pucks: "Puckar",
+      withPuck: "Med puck",
+      backWithPuck: "Bakåt puck",
+      surfaces: { full: "Helplan", half: "Halvplan", zone: "Zon" }
+    }
   },
   innebandy: {
     clubName: "Herrhagens Innebandy",
     icon: "🏑",
     slotTime: "Halltid",
     openLive: "Öppna planläget",
-    areas: { full: "Helplan", half: "Halvplan", third: "Tredjedel", station: "Kvartsplan" }
+    areas: { full: "Helplan", half: "Halvplan", third: "Tredjedel", station: "Kvartsplan" },
+    sketch: {
+      puck: "Boll",
+      pucks: "Bollar",
+      withPuck: "Med boll",
+      backWithPuck: "Bakåt boll",
+      surfaces: { full: "Helplan", half: "Halvplan", zone: "Kvartsplan" }
+    }
   }
-} satisfies Record<SportId, { clubName: string; icon: string; slotTime: string; openLive: string; areas: Record<Area, string> }>;
+} satisfies Record<
+  SportId,
+  {
+    clubName: string;
+    icon: string;
+    slotTime: string;
+    openLive: string;
+    areas: Record<Area, string>;
+    sketch: {
+      puck: string;
+      pucks: string;
+      withPuck: string;
+      backWithPuck: string;
+      surfaces: Record<SketchSurface, string>;
+    };
+  }
+>;
 
 const T = BY_SPORT[SPORT_ID];
 
@@ -223,6 +254,7 @@ export const sv = {
       long: "15+ min",
       none: "Inga övningar matchar filtret.",
       newDrill: "Egen övning",
+      drawDrill: "Rita övning",
       own: "Egen"
     },
     drill: {
@@ -253,10 +285,57 @@ export const sv = {
       area: "Yta",
       minPlayers: "Minsta antal spelare",
       equipment: "Utrustning",
-      diagram: "Skiss (bild)",
-      diagramHint: "Fota en whiteboard eller ladda upp en bild.",
+      diagram: "Skiss",
+      diagramHint: "Rita övningen, eller fota en whiteboard.",
       removeDiagram: "Ta bort bild",
+      draw: "Rita skiss",
+      editSketch: "Ändra skiss",
+      removeSketch: "Ta bort skiss",
       needName: "Ge övningen ett namn."
+    },
+    sketch: {
+      title: "Rita övning",
+      done: "Klar",
+      cancel: "Avbryt",
+      undo: "Ångra",
+      redo: "Gör om",
+      remove: "Ta bort",
+      clear: "Rensa",
+      clearConfirm: "Tryck igen för att rensa",
+      rotate: "Vrid",
+      smaller: "Mindre",
+      larger: "Större",
+      move: "Flytta",
+      textDefault: "Text",
+      textLabel: "Text",
+      canvas: "Ritytan",
+      surfaces: T.sketch.surfaces satisfies Record<SketchSurface, string>,
+      colors: { red: "Röd", blue: "Blå", yellow: "Gul", black: "Svart" } satisfies Record<SketchColor, string>,
+      lines: {
+        skate: "Åk",
+        skateBack: "Åk bakåt",
+        puck: T.sketch.withPuck,
+        puckBack: T.sketch.backWithPuck,
+        pass: "Pass",
+        shot: "Skott"
+      } satisfies Record<LineKind, string>,
+      ends: { arrow: "Pil", stop: "Stopp", none: "Ingen" } satisfies Record<LineEnd, string>,
+      markers: {
+        player: "Spelare",
+        coach: "Tränare",
+        puck: T.sketch.puck,
+        pucks: T.sketch.pucks,
+        cone: "Kon",
+        tire: "Däck",
+        net: "Mål",
+        smallNet: "Litet mål",
+        obstacle: "Hinder",
+        zone: "Skottzon",
+        text: "Text"
+      } satisfies Record<MarkerKind, string>,
+      goalie: "Målvakt",
+      coachLabel: "Tr",
+      noLabel: "–"
     },
     season: {
       title: "Säsongen",

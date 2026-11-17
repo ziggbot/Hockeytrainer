@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { SketchView } from "../components/SketchView";
 import { AppMark } from "../components/AppMark";
 import { stationStyle } from "../components/stationColor";
 import { minutesToTime, parseISODate, timeToMinutes } from "../domain/dates";
@@ -123,6 +124,7 @@ export function SharedSession() {
                       </summary>
                       {d && (
                         <>
+                          {d.sketch && <SketchView sketch={d.sketch} className="sketch--page" />}
                           <p style={{ margin: "6px 0" }}>{d.description}</p>
                           <ul className="points">
                             {d.coachingPoints.map((p) => (

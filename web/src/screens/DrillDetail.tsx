@@ -4,6 +4,7 @@ import { AppLink } from "../components/AppLink";
 import { BackBar, BottomNav } from "../components/Chrome";
 import { ConfirmButton } from "../components/ConfirmButton";
 import { AreaDiagram } from "../components/AreaDiagram";
+import { SketchView } from "../components/SketchView";
 import { Sheet } from "../components/Sheet";
 import { upcomingSlots } from "../domain/schedule";
 import type { Drill, EquipmentNeed } from "../domain/types";
@@ -59,6 +60,7 @@ export function DrillDetail() {
             {S.iceAreas[drill.iceArea]}
           </span>
         </div>
+        {drill.sketch && <SketchView sketch={drill.sketch} className="sketch--page" />}
         {drill.diagram && (
           <img src={drill.diagram} alt="" style={{ display: "block", width: "100%", marginTop: 16, borderRadius: 12 }} />
         )}

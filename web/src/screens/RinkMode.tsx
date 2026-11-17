@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { SketchView } from "../components/SketchView";
 import { ConfirmButton } from "../components/ConfirmButton";
 import { stationStyle } from "../components/stationColor";
 import { minutesToTime, timeToMinutes } from "../domain/dates";
@@ -363,6 +364,7 @@ function DrillBody({ drill }: { drill: Drill | undefined }) {
   if (!drill) return null;
   return (
     <>
+      {drill.sketch && <SketchView sketch={drill.sketch} className="rk-sketch" />}
       <ul className="rk-points">
         {drill.coachingPoints.map((p) => (
           <li key={p}>{p}</li>

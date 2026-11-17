@@ -1,3 +1,5 @@
+import type { Sketch } from "./sketch";
+
 // Core data model. Mirrors SPEC_hockey.md §4 so the same shapes can be
 // mapped 1:1 to Postgres tables when the Supabase backend lands.
 // No player personal data anywhere (spec §4, GDPR): only a player count.
@@ -86,6 +88,8 @@ export interface Drill {
   equipment: EquipmentNeed[];
   /** Image URL or data URL. Uploaded image in the MVP (spec §5.3). */
   diagram?: string;
+  /** Drawn diagram in coaching notation (own drills). */
+  sketch?: Sketch;
   visibility: "private" | "club" | "public";
   source: "seed" | "own";
 }

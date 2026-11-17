@@ -1,0 +1,52 @@
+import pg from 'pg';
+// Keep DATE columns as 'YYYY-MM-DD' strings instead of JS Dates (avoids timezone off-by-one).
+pg.types.setTypeParser(1082, (v) => v);
+/**
+ * Neon's connection strings use sslmode=require. node-postgres currently treats that as
+ * verify-full but warns that pg v9 will switch to libpq semantics (no certificate check).
+ * Pin verify-full so the server certificate is always verified.
+ */
+export function normalizeDatabaseUrl(connectionString) {
+    let url;
+    try {
+        url = new URL(connectionString);
+    }
+    catch {
+        return connectionString;
+    }
+    const mode = url.searchParams.get('sslmode');
+    if (mode && ['require', 'prefer', 'verify-ca'].includes(mode)) {
+        url.searchParams.set('sslmode', 'verify-full');
+    }
+    return url.toString();
+}
+export function createPool(connectionString) {
+    const pool = new pg.Pool({
+        connectionString: normalizeDatabaseUrl(connectionString),
+        max: Number(process.env.PG_POOL_MAX ?? 5),
+        // Neon suspends idle compute; let idle connections go so the pool reconnects cleanly.
+        idleTimeoutMillis: 30_000,
+        // A suspended Neon compute needs a moment to wake up.
+        connectionTimeoutMillis: 20_000,
+    });
+    // Without this handler an idle connection dropped by Neon would crash the process.
+    pool.on('error', (err) => console.error('[db] idle client error:', err.message));
+    return pool;
+}
+export async function tx(pool, fn) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const result = await fn(client);
+        await client.query('COMMIT');
+        return result;
+    }
+    catch (err) {
+        await client.query('ROLLBACK').catch(() => undefined);
+        throw err;
+    }
+    finally {
+        client.release();
+    }
+}
+//# sourceMappingURL=db.js.map

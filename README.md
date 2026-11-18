@@ -41,28 +41,30 @@ The preview routes in memory and has no service worker (the sandbox forbids it),
 
 | # | Feature | Status |
 |---|---|---|
-| 1 | Auth and club setup | **Not started.** Needs the Supabase EU project. Teams are local for now. |
+| 1 | Auth and club setup | **Team level done.** Coach accounts, *Hantera lag*: the creator is head coach and invites coaches by link; roles, leave/remove, password links (ADR [`0005`](docs/decisions/0005-teams-and-sync.md)). Club level (admin across teams) not yet. |
 | 2 | Curriculum editor | **Partial.** Blocks (name, weeks, 1–2 focus skills) and philosophy are editable per age group. No admin role, fixed age-group list. |
 | 3 | Drill library | **Done (content partial).** 41 own seed drills (spec target 50–100), filters, own drills with a drawn sketch or image upload. |
 | 4 | Session planner | **Done.** Club base: 5 min warm-up → 5 min gathering/station split → 4 stations (D is always a match against small goals) + free zone in the middle → focus drill (longer ice) → game → closing talk (5 min, 10 from 75 min), all in 5-minute steps. Curated templates first, else generated from block focus; varied across the week. |
 | 5 | Equipment checklist | **Done.** Max across sequential parts, summed across parallel stations, tick-off. |
 | 6 | Rink mode | **Done.** Offline, timer, station view, wake lock. iOS wake-lock behaviour still to verify on a device (spec §9). |
 | 7 | Share link | **Interim.** Read-only snapshot in the URL fragment, no account. Becomes a live token link with the backend. |
-| 8 | Post-session notes | **Local.** Tags + text, append-only. Visible to other coaches once sync exists. |
+| 8 | Post-session notes | **Done.** Tags + text, append-only, synced to the team's coaches. |
 | 9 | iCal import | **Not started.** A weekly schedule stands in. Needs a server-side fetch (CORS). |
 | 10 | Admin overview | **Partial.** Per-team block coverage. Club-wide overview needs the backend. |
 
 ## Before the pilot
 
 - **Content review:** a club coach should read every seed drill and the season plans (`web/src/sport/<sport>/drills.ts`, `curricula.ts`) — a hockey coach for the hockey pack, a floorball coach for the floorball pack. Both are app-written drafts, not federation guidance. The library needs roughly 10–60 more drills to reach the spec's 50–100.
-- **Backend:** create a Supabase project in an EU region, then add auth (magic link), club/team/membership with row-level security, and sync. See `docs/decisions/0001-web-pwa-local-first.md`.
+- **Backend:** `server/` on Render with Postgres on Neon (Frankfurt). Set it up with [`docs/DEPLOY.md`](docs/DEPLOY.md): one Neon project and one `DATABASE_URL` in Render.
 - **Device check:** rink mode on an iPhone home-screen install (wake lock, timer audio in silent mode).
 
 ## Layout
 
 ```
+server/        team API (Fastify + Postgres): accounts, teams, invites, sync (+ tests against Postgres)
 web/src/
-  domain/      pure TS: types, planner, curriculum weeks, equipment, schedule, share links (+ tests)
+  domain/      pure TS: types, planner, curriculum weeks, equipment, schedule, share links, sync merge (+ tests)
+  sync/        API client, account, background sync engine, team calls
   sport/       one pack per sport (hockey, innebandy): seed drills, curricula, templates, session shape (+ tests)
   store/       local-first state (localStorage) and actions
   i18n/        Swedish strings (sv.ts) + date formatting

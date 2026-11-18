@@ -6,7 +6,7 @@ A free, Swedish-language planning tool for volunteer youth ice hockey coaches. I
 
 - **`web/`** — React + Vite + TypeScript PWA. The only client. See `docs/decisions/0001-web-pwa-local-first.md` for why not Expo.
 - **Two apps, one code base** (`docs/decisions/0003-sport-packs.md`): the ice hockey app (Färjestad, default build) and the floorball app "Tränarappen Innebandy" (Herrhagens Innebandy, `VITE_SPORT=innebandy`, spec `SPEC_innebandy.md`). Everything sport-specific lives in a pack under `web/src/sport/<sport>/`; read the active one as `SPORT`, never import a pack's content directly in app code. Any change to shared code must keep both builds and both packs' tests green.
-- **Backend** — not wired yet. Planned: Supabase in an **EU region** (spec §7). Until then all data is local to the device.
+- **`server/`** — the team API (Node + Fastify) on Render, Postgres on **Neon in Frankfurt** (`docs/decisions/0005-teams-and-sync.md`; replaces the Supabase plan). Coach accounts, teams with a head coach (huvudtränare) and coaches, invite links, and background sync. The app stays **local-first**: every screen works on device data; sync (`web/src/domain/sync.ts`, `web/src/sync/`) catches up when there is a signal, and is off when `VITE_API_URL` is unset (e.g. the claude.ai preview). `cd server && npm test` needs a Postgres (`TEST_DATABASE_URL`).
 
 ## UX language — design B "Isen" (chosen by the club, see ADR 0002)
 
@@ -32,7 +32,7 @@ Simple, clear and usable rink-side beats feature-rich. Keep to these patterns:
 
 ## Non-negotiables
 
-- **No player personal data** (spec §4, GDPR). Only a player *count* per team. Coach accounts: email + name only, once auth exists.
+- **No player personal data** (spec §4, GDPR). Only a player *count* per team. Coach accounts: email + name only. No searchable directory of coaches: co-coaches join through invite links.
 - Hosting and data in the **EU**.
 - Drill content is **our own** — never copy federation (Svenska Ishockeyförbundet, Svensk Innebandy) or third-party drill material. Seed drills and the curriculum are drafts that a club coach must review (spec §9).
 - Notes are append-only (they will sync as a queue).

@@ -1,8 +1,9 @@
-# Render blueprint for the Tränarappen web PWA.
+# Render blueprint for Tränarappen: two static web apps (hockey, floorball)
+# and the team API (server/) with Postgres on Neon (Frankfurt).
 #
-# Render → New → Blueprint → connect this repo. The app lives in web/, so
-# rootDir points there and the published output is web/dist. No env vars
-# are needed until the Supabase backend is wired in.
+# Render → New → Blueprint → connect this repo. See docs/DEPLOY.md.
+# VITE_API_URL / ALLOWED_ORIGINS below assume Render's default
+# <name>.onrender.com hosts; check the real URLs in the dashboard.
 
 services:
   - type: web
@@ -13,7 +14,9 @@ services:
     staticPublishPath: ./dist
     envVars:
       - key: NODE_VERSION
-        value: "20"
+        value: "22"
+      - key: VITE_API_URL
+        value: https://tranarappen-api.onrender.com
     # SPA fallback: unmatched paths serve index.html so React Router handles
     # /pass/*, /ovningar/*, /delat etc. Real files take precedence.
     routes:
@@ -36,7 +39,9 @@ services:
     staticPublishPath: ./dist
     envVars:
       - key: NODE_VERSION
-        value: "20"
+        value: "22"
+      - key: VITE_API_URL
+        value: https://tranarappen-api.onrender.com
       - key: VITE_SPORT
         value: innebandy
     routes:
@@ -47,3 +52,26 @@ services:
       - path: /sw.js
         name: Cache-Control
         value: "no-cache"
+
+  # Team API: coach accounts, teams (head coach + coaches), invites, sync.
+  - type: web
+    name: tranarappen-api
+    runtime: node
+    region: frankfurt
+    plan: free
+    rootDir: server
+    # NODE_ENV=production also applies to the build, so install dev deps (TypeScript) explicitly.
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: node dist/index.js
+    # Liveness only: never queries the database, so Neon can scale to zero.
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      # Neon connection string (pooled). Not in the repo: set it in Render.
+      - key: DATABASE_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: https://tranarappen-web.onrender.com,https://tranarappen-innebandy.onrender.com

@@ -90,6 +90,8 @@ export interface Drill {
   diagram?: string;
   /** Drawn diagram in coaching notation (own drills). */
   sketch?: Sketch;
+  /** Set on a co-coach's drill received through team sync (read-only here). */
+  ownerId?: string;
   visibility: "private" | "club" | "public";
   source: "seed" | "own";
 }

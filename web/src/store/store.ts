@@ -132,6 +132,9 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
+/** For non-React code (team sync) that reacts to every change. */
+export const subscribeState = subscribe;
+
 export function useAppState(): AppState {
   return useSyncExternalStore(subscribe, getState, getState);
 }

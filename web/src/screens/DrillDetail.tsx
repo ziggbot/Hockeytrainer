@@ -101,7 +101,12 @@ export function DrillDetail() {
           </button>
         )}
 
-        {drill.source === "own" && (
+        {drill.source === "own" && drill.ownerId && (
+          <p className="sub" style={{ marginTop: 20 }}>
+            {S.ui.manage.coCoachDrill}
+          </p>
+        )}
+        {drill.source === "own" && !drill.ownerId && (
           <div style={{ display: "flex", gap: 20, marginTop: 24 }}>
             <AppLink to={`/ovningar/${drill.id}/andra`} className="link">
               {t.editOwn}

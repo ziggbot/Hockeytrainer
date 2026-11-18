@@ -12,6 +12,9 @@ import { RinkRoute } from "./screens/RinkMode";
 import { Season } from "./screens/Season";
 import { SessionScreen } from "./screens/SessionScreen";
 import { SharedSession } from "./screens/SharedSession";
+import { JoinTeam } from "./screens/JoinTeam";
+import { ManageTeam } from "./screens/ManageTeam";
+import { NewPassword } from "./screens/NewPassword";
 import { TeamSettings } from "./screens/TeamSettings";
 
 function ScrollToTop() {
@@ -66,6 +69,9 @@ export function App() {
           <Route path="/ovningar/:id/andra" element={<DrillEditor />} />
           <Route path="/sasong" element={<Season />} />
           <Route path="/lag" element={<TeamSettings />} />
+          <Route path="/lag/hantera" element={<ManageTeam />} />
+          <Route path="/inbjudan/:token" element={<JoinTeam />} />
+          <Route path="/nytt-losenord/:token" element={<NewPassword />} />
           <Route path="/nytt-lag" element={<NewTeam />} />
           <Route path="/delat" element={<SharedSession />} />
           <Route path="*" element={<Navigate to="/" replace />} />

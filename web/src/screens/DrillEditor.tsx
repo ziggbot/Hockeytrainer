@@ -38,7 +38,8 @@ export function DrillEditor({ startDrawing = false }: { startDrawing?: boolean }
   const { id } = useParams();
   const state = useAppState();
   const navigate = useNavigate();
-  const existing = id ? state.ownDrills.find((d) => d.id === id) : undefined;
+  // A co-coach's drill (team sync) is read-only here.
+  const existing = id ? state.ownDrills.find((d) => d.id === id && !d.ownerId) : undefined;
   const team = activeTeam(state);
   const ag = team ? ageGroupOf(team) : undefined;
 

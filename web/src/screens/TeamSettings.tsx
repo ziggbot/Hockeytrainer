@@ -10,6 +10,9 @@ import { IS_ARTIFACT } from "../platform";
 import { activeTeam, deleteTeam, newTrainingTime, setActiveTeam, setCoachName, updateTeam } from "../store/actions";
 import { getState, replaceState, useAppState, type AppState } from "../store/store";
 import { SPORT } from "../sport";
+import { TEAMS_ENABLED } from "../sync/api";
+import { linkedTeams } from "../sync/engine";
+import { useAccount } from "../sync/account";
 
 const t = S.ui.team;
 
@@ -18,7 +21,10 @@ export function TeamSettings() {
   const state = useAppState();
   const team = activeTeam(state);
   const navigate = useNavigate();
+  const account = useAccount();
   if (!team) return <Navigate to="/" replace />;
+  // A shared team is left or deleted under "Hantera lag", where the roles are known.
+  const shared = !!account && linkedTeams().includes(team.id);
 
   const patch = (p: Partial<Team>) => updateTeam({ ...team, ...p });
   const patchTime = (id: string, p: Partial<TrainingTime>) =>
@@ -28,6 +34,11 @@ export function TeamSettings() {
     <main className="page page--bare">
       <BackBar to="/" />
       <h1 className="title">{t.title}</h1>
+      {TEAMS_ENABLED && (
+        <button type="button" className="btn btn--block" style={{ marginTop: 8 }} onClick={() => navigate("/lag/hantera")}>
+          👥 {S.ui.manage.title}
+        </button>
+      )}
 
       <label className="field">
         <span className="field__label">{t.coachName}</span>
@@ -159,16 +170,18 @@ export function TeamSettings() {
 
       <DataSection />
 
-      <ConfirmButton
-        className="link link--danger"
-        style={{ marginTop: 28, display: "block" }}
-        label={t.deleteTeam}
-        confirmLabel={S.ui.common.tapAgainDelete}
-        onConfirm={() => {
-          deleteTeam(team.id);
-          navigate("/", { replace: true });
-        }}
-      />
+      {!shared && (
+        <ConfirmButton
+          className="link link--danger"
+          style={{ marginTop: 28, display: "block" }}
+          label={t.deleteTeam}
+          confirmLabel={S.ui.common.tapAgainDelete}
+          onConfirm={() => {
+            deleteTeam(team.id);
+            navigate("/", { replace: true });
+          }}
+        />
+      )}
     </main>
   );
 }

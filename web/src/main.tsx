@@ -6,6 +6,7 @@ import { IS_ARTIFACT } from "./platform";
 import { toISODate } from "./domain/dates";
 import { SPORT } from "./sport";
 import { refreshUntouchedPlans, snapOffGridPlans } from "./store/actions";
+import { startSync } from "./sync/engine";
 import "./design/global.css";
 
 // Per-sport colours (global.css: :root[data-sport]).
@@ -26,3 +27,6 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </StrictMode>
 );
+
+// Shared teams: catch up with co-coaches in the background (no-op when not signed in).
+startSync();

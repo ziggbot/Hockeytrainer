@@ -1481,3 +1481,16 @@ textarea.input {
     flex-wrap: wrap;
   }
 }
+
+/* ── Hantera lag ────────────────────────────────────────────── */
+
+.manage-row {
+  align-items: flex-start;
+}
+
+.manage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}

@@ -144,21 +144,19 @@ function NextUp({ team, slot, now, onGo, onOpen }: { team: Team; slot: Slot; now
   const plan = slot.session ?? previewPlan(team, slot.date, slot.minutes);
   const count = drillIdsOf(plan.parts).length;
   return (
-    <>
+    <div className="next">
+      <div className="next__label">{t.nextLabel(`${relativeDay(slot.date, now)} ${formatTime(slot.start)}`)}</div>
+      <h2 className="next__title">{plan.title}</h2>
+      <div className="next__meta">
+        {S.ui.common.drills(count)} · {S.ui.common.minutes(slot.minutes)}
+      </div>
       <button type="button" className="cta" onClick={onGo}>
         {t.go}
       </button>
-      <div className="next">
-        <div className="next__label">{t.nextLabel(`${relativeDay(slot.date, now)} ${formatTime(slot.start)}`)}</div>
-        <h2 className="next__title">{plan.title}</h2>
-        <div className="next__meta">
-          {S.ui.common.drills(count)} · {S.ui.common.minutes(slot.minutes)}
-        </div>
-        <button type="button" className="link" onClick={onOpen}>
-          {t.showPlan}
-        </button>
-      </div>
-    </>
+      <button type="button" className="link" onClick={onOpen}>
+        {t.showPlan}
+      </button>
+    </div>
   );
 }
 

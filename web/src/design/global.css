@@ -359,6 +359,11 @@ a[role="link"] {
   margin: 2px 0 4px;
 }
 
+/* The start button sits inside the card, under the practice it starts. */
+.next .cta {
+  margin: 14px 0 10px;
+}
+
 /* ── Sections ───────────────────────────────────────────────── */
 
 .section {
